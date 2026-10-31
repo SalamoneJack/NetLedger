@@ -3,14 +3,22 @@ name: Release
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to publish to PyPI, e.g. v1.0.0"
+        required: true
 
 permissions:
-  contents: write
-  packages: write
+  contents: read
 
 jobs:
   image:
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-qemu-action@v3
@@ -37,14 +45,49 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
   python-package:
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - run: pip install build && python -m build
+      - name: Release notes from the changelog
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          awk -v v="$version" 'index($0, "## [" v "]") == 1 {found=1; next} found && /^## \[/ {exit} found {print}' CHANGELOG.md > release-notes.md
       - uses: softprops/action-gh-release@v2
         with:
           files: dist/*
+          body_path: release-notes.md
           generate_release_notes: true
+
+  pypi:
+    # PyPI trusted publishing (no API token). One-time setup on pypi.org -> Account settings -> Publishing ->
+    # "Add a new pending publisher": project netledger, owner SalamoneJack, repository NetLedger,
+    # workflow release.yml, environment pypi. Then: gh variable set PYPI_PUBLISH --body true
+    if: vars.PYPI_PUBLISH == 'true'
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Absolute links for the PyPI project page
+        env:
+          REF: ${{ inputs.tag || github.ref_name }}
+        run: |
+          raw="https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${REF}/"
+          blob="https://github.com/${GITHUB_REPOSITORY}/blob/${REF}/"
+          sed -i -E "s#(\(|src=\")docs/images/#\1${raw}docs/images/#g; s#\]\((docs/|deploy/|LICENSE|SECURITY.md|CONTRIBUTING.md|CHANGELOG.md)#](${blob}\1#g" README.md
+      - run: pip install build && python -m build
+      - uses: pypa/gh-action-pypi-publish@release/v1

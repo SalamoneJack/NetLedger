@@ -17,7 +17,7 @@
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-22c55e"></a>
 </p>
 
-![NetLedger console](docs/images/dashboard.png)
+![A 30-second tour: command palette, where is, time machine, change ledger, network map, dark mode](docs/images/demo.gif)
 
 NetLedger logs in to your routers, switches and firewalls, pulls their configurations with
 [NAPALM](https://github.com/napalm-automation/napalm), strips out the noise and **commits every real change
@@ -108,7 +108,9 @@ risky they were, or to *Vendor*. Drag nodes, zoom and pan; positions are remembe
   sets the default).
 
 <details>
-<summary><b>More screenshots:</b> dark theme and the NOC wallboard</summary>
+<summary><b>More screenshots:</b> the full overview, dark theme and the NOC wallboard</summary>
+
+![Overview](docs/images/dashboard.png)
 
 ![Overview, dark theme](docs/images/dashboard-dark.png)
 
@@ -137,6 +139,26 @@ risky they were, or to *Vendor*. Drag nodes, zoom and pan; positions are remembe
 - **Try it in seconds.** `netledger demo` builds a simulated 13-device network with six weeks of history
   (changes by five engineers, a memory leak, a failing fan, a site outage) so you can explore everything
   without touching production.
+
+## How NetLedger compares
+
+[Oxidized](https://github.com/ytti/oxidized) and [RANCID](https://shrubbery.net/rancid/) are mature,
+battle-tested backup tools with broader device coverage. If configuration backup is all you need, they are
+great choices. NetLedger is for teams that also want to *understand* every change and keep an eye on device
+health, in one tool.
+
+| | NetLedger | Oxidized | RANCID |
+|---|---|---|---|
+| Configuration backup with Git history | ✅ | ✅ | ✅ (also CVS / Subversion) |
+| Device coverage | 24 built-in platforms, any NAPALM driver, plus a Netmiko-based `generic` | 130+ OS types | dozens of device types |
+| Written in | Python (NAPALM, Netmiko) | Ruby | Perl and expect |
+| Plain-English change summaries and risk scores | ✅ | - | - |
+| Change windows and unplanned-change alerts | ✅ | - | - |
+| IP-aware "where is" search (subnets, wildcards, every notation) | ✅ | - | - |
+| CPU, memory, temperature, fan and PSU health checks | ✅ | - | - |
+| Health history and exhaustion forecasts | ✅ | - | - |
+| LLDP network map | ✅ | - | - |
+| Web interface | ✅ built in | ✅ (oxidized-web) | - |
 
 ## From the command line
 
@@ -170,7 +192,7 @@ risky they were, or to *Vendor*. Drag nodes, zoom and pan; positions are remembe
 </details>
 
 > All screenshots come from `netledger demo`: simulated devices with made-up names and addresses.
-> Regenerate them with `python scripts/screenshots.py`.
+> Regenerate them with `python scripts/screenshots.py` and the tour with `python scripts/demo_gif.py`.
 
 ## Quick start
 
