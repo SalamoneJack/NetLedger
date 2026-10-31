@@ -174,7 +174,7 @@ def test_push_to_remote_and_replay_when_remote_moves(make_env, bare_remote: str,
     assert report.pushed and report.commits == 1
     # someone else pushes an unrelated commit to the backup repository
     other = tmp_path / "other"
-    git(tmp_path, "clone", "-q", bare_remote, str(other))
+    git(tmp_path, "clone", "-q", "-b", "main", bare_remote, str(other))
     (other / "NOTES.md").write_text("hello\n")
     git(other, "add", ".")
     git(other, "commit", "-qm", "human edit")

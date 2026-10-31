@@ -64,6 +64,8 @@ def make_env(tmp_path: Path) -> Callable[..., Settings]:
 def bare_remote(tmp_path: Path) -> str:
     remote = tmp_path / "remote.git"
     subprocess.run(["git", "init", "-q", "--bare", str(remote)], check=True)
+    # do not depend on the machine's init.defaultBranch (CI runners default to "master")
+    subprocess.run(["git", "--git-dir", str(remote), "symbolic-ref", "HEAD", "refs/heads/main"], check=True)
     return remote.as_uri()
 
 
