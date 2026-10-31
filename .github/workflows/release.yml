@@ -88,6 +88,6 @@ jobs:
         run: |
           raw="https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${REF}/"
           blob="https://github.com/${GITHUB_REPOSITORY}/blob/${REF}/"
-          sed -i -E "s#(\(|src=\")docs/images/#\1${raw}docs/images/#g; s#\]\((docs/|deploy/|LICENSE|SECURITY.md|CONTRIBUTING.md|CHANGELOG.md)#](${blob}\1#g" README.md
+          sed -i -E "s#(\(|src=\")docs/images/#\1${raw}docs/images/#g; s#(\]\(|href=\")(docs/|deploy/|LICENSE|SECURITY.md|CONTRIBUTING.md|CHANGELOG.md)#\1${blob}\2#g" README.md
       - run: pip install build && python -m build
       - uses: pypa/gh-action-pypi-publish@release/v1
