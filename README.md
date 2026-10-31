@@ -11,6 +11,7 @@
 
 <p align="center">
   <a href="https://github.com/SalamoneJack/NetLedger/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/SalamoneJack/NetLedger/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://pypi.org/project/netledger/"><img alt="PyPI" src="https://img.shields.io/pypi/v/netledger?color=3775a9"></a>
   <img alt="Python" src="https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-3776ab">
   <img alt="Platforms" src="https://img.shields.io/badge/platforms-24%20built--in-7c95ff">
   <img alt="Runs on" src="https://img.shields.io/badge/runs%20on-Kubernetes%20%7C%20Docker%20%7C%20Linux%20%7C%20Windows-0e7490">
@@ -199,7 +200,7 @@ health, in one tool.
 ### 1. Take the tour (no network gear needed)
 
 ```bash
-pip install "git+https://github.com/SalamoneJack/NetLedger.git"
+pip install netledger
 netledger demo                      # then open http://127.0.0.1:8080
 ```
 

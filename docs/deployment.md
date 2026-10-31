@@ -179,7 +179,7 @@ domain-joined bastion) with a group managed service account:
 
 ```yaml
 # GitHub Actions / GitLab CI against devices reachable from a self-hosted runner
-- run: pip install "git+https://github.com/SalamoneJack/NetLedger.git"
+- run: pip install netledger
 - run: netledger -c netledger.yaml backup --json > backup-report.json
 ```
 
