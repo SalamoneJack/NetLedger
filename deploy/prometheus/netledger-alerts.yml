@@ -1,0 +1,65 @@
+# Prometheus alerting rules for NetLedger (standalone Prometheus: add to rule_files).
+# Kubernetes / Prometheus Operator users: see deploy/kubernetes/optional/prometheusrule.yaml.
+groups:
+  - name: netledger
+    rules:
+      - alert: NetLedgerBackupFailing
+        expr: netledger_backup_consecutive_failures >= 2
+        for: 15m
+        labels: {severity: warning}
+        annotations:
+          summary: "Configuration backup failing for {{ $labels.device }}"
+      - alert: NetLedgerBackupStale
+        expr: time() - netledger_backup_last_success_timestamp_seconds > 2 * 86400
+        for: 1h
+        labels: {severity: warning}
+        annotations:
+          summary: "No successful backup of {{ $labels.device }} for 2 days"
+      - alert: NetLedgerDeviceDown
+        expr: netledger_device_up == 0
+        for: 10m
+        labels: {severity: critical}
+        annotations:
+          summary: "{{ $labels.device }} is not answering health checks"
+      - alert: NetLedgerHighCPU
+        expr: netledger_cpu_usage_percent > 90
+        for: 15m
+        labels: {severity: warning}
+        annotations:
+          summary: "CPU on {{ $labels.device }} at {{ $value | humanize }}%"
+      - alert: NetLedgerHighMemory
+        expr: netledger_memory_usage_percent > 90
+        for: 15m
+        labels: {severity: warning}
+        annotations:
+          summary: "Memory on {{ $labels.device }} at {{ $value | humanize }}%"
+      - alert: NetLedgerTemperature
+        expr: netledger_temperature_alert == 1
+        for: 10m
+        labels: {severity: warning}
+        annotations:
+          summary: "Temperature alarm on {{ $labels.device }} ({{ $labels.sensor }})"
+      - alert: NetLedgerHardwareFault
+        expr: netledger_fan_ok == 0 or netledger_power_supply_ok == 0
+        for: 5m
+        labels: {severity: critical}
+        annotations:
+          summary: "Fan or power supply failure on {{ $labels.device }}"
+      - alert: NetLedgerComplianceFailing
+        expr: netledger_compliance_ok == 0
+        for: 1h
+        labels: {severity: info}
+        annotations:
+          summary: "{{ $labels.device }} fails compliance rule {{ $labels.rule }}"
+      - alert: NetLedgerCapacityForecast
+        expr: netledger_forecast_seconds_to_threshold < 3 * 86400
+        for: 1h
+        labels: {severity: warning}
+        annotations:
+          summary: "{{ $labels.device }} {{ $labels.metric }} is predicted to cross its {{ $labels.level }} threshold within 3 days"
+      - alert: NetLedgerRepositoryError
+        expr: netledger_backup_run_error == 1
+        for: 30m
+        labels: {severity: critical}
+        annotations:
+          summary: "NetLedger cannot fetch from or push to the backup repository"

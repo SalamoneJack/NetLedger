@@ -1,0 +1,15 @@
+NetLedger {{ .Chart.AppVersion }} is starting.
+
+Dashboard and metrics:
+  kubectl -n {{ .Release.Namespace }} port-forward svc/{{ include "netledger.fullname" . }} {{ .Values.service.port }}:{{ .Values.service.port }}
+  open http://localhost:{{ .Values.service.port }}/   (metrics: /metrics)
+
+Logs:
+  kubectl -n {{ .Release.Namespace }} logs deploy/{{ include "netledger.fullname" . }} -f
+
+Run a backup right now (set server.api_token in config to enable):
+  curl -X POST -H "Authorization: Bearer $TOKEN" http://localhost:{{ .Values.service.port }}/api/run/backup
+{{- if and (not .Values.existingSecret) (not .Values.secrets.GIT_TOKEN) }}
+
+WARNING: secrets.GIT_TOKEN is empty - NetLedger cannot push to {{ .Values.config.git.url | default "your repository" }}.
+{{- end }}

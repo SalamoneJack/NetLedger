@@ -1,0 +1,15 @@
+# Prometheus Operator: scrape NetLedger metrics.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: netledger
+  labels:
+    app.kubernetes.io/name: netledger
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: netledger
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 60s

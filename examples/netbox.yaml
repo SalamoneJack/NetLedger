@@ -1,0 +1,27 @@
+# Pull the inventory from NetBox instead of (or in addition to) local files.
+# Put this in netledger.yaml under "inventory:".
+inventory:
+  - type: netbox
+    url: https://netbox.example.com
+    token: ${NETBOX_TOKEN}
+    # Query parameters for /api/dcim/devices/ (any NetBox filter works)
+    filters:
+      status: active
+      has_primary_ip: "true"
+      tag: netledger-backup
+    # NetBox platform slug -> NetLedger platform (run 'netledger platforms')
+    platform_map:
+      cisco-ios-xe: ios
+      cisco-nx-os: nxos
+      fortigate: fortios
+      palo-alto: panos
+      juniper-junos: junos
+      arista-eos: eos
+    site_field: slug            # or "name"
+    include_virtual_machines: false
+    # Applied to every NetBox device (per-device overrides: config context key "netledger")
+    defaults:
+      credentials: default
+      tags: [netbox]
+  # Mix sources freely; later sources override devices with the same name.
+  - overrides.yaml

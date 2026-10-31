@@ -1,0 +1,42 @@
+# NetLedger on Kubernetes (plain manifests via Kustomize)
+#
+#   cp secret.env.example secret.env      # fill in credentials and your Git token
+#   # edit config/netledger.yaml and config/inventory.yaml
+#   kubectl apply -k deploy/kubernetes
+#
+# Editing the config files and re-applying rolls the pod automatically (hashed ConfigMap name).
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: netledger
+
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: netledger
+    includeSelectors: false
+
+resources:
+  - namespace.yaml
+  - pvc.yaml
+  - deployment.yaml
+  - service.yaml
+  # Optional - needs the Prometheus Operator CRDs:
+  # - optional/servicemonitor.yaml
+  # - optional/prometheusrule.yaml
+  # Optional - stateless CronJob mode instead of the always-on Deployment:
+  # - optional/cronjob.yaml
+
+configMapGenerator:
+  - name: netledger-config
+    files:
+      - config/netledger.yaml
+      - config/inventory.yaml
+
+secretGenerator:
+  - name: netledger-secrets
+    envs:
+      - secret.env
+
+images:
+  - name: ghcr.io/salamonejack/netledger
+    newTag: "1.0.0"

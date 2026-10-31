@@ -1,0 +1,84 @@
+# NetLedger inventory
+# Docs: https://github.com/SalamoneJack/NetLedger/blob/main/docs/inventory.md
+#
+# Settings merge in this order: defaults -> groups (in order) -> device.
+# Run 'netledger platforms' for every supported platform name.
+
+defaults:
+  credentials: default
+
+groups:
+  cisco:
+    platform: ios
+  core:
+    groups: [cisco]             # groups can inherit from other groups
+    role: core
+    tags: [critical]
+  fortigate:
+    platform: fortios
+    role: firewall
+  datacenter:
+    site: dc1
+
+devices:
+  - name: core-sw01
+    host: 10.0.0.11
+    site: hq
+    groups: [core]
+
+  - name: core-sw02
+    host: 10.0.0.12
+    site: hq
+    groups: [core]
+    credentials: [default, local-fallback]   # try TACACS first, then a local account
+
+  - name: fw01
+    host: 10.0.0.1
+    site: hq
+    groups: [fortigate]
+
+  - name: dc1-leaf01
+    host: 10.20.0.31
+    platform: eos
+    groups: [datacenter]
+    tags: [leaf]
+
+  - name: dc1-spine01
+    host: 10.20.0.21
+    platform: junos
+    groups: [datacenter]
+    health:
+      thresholds:
+        cpu: {warning: 90}      # per-device threshold overrides
+
+  - name: edge-fw01
+    host: 10.20.0.5
+    platform: panos
+    groups: [datacenter]
+
+  - name: branch-rtr01
+    host: branch-rtr01.example.com
+    platform: routeros
+    site: nyc
+
+  # Anything Netmiko can talk to, config backup only:
+  - name: lab-xr01
+    host: 10.99.0.9
+    platform: generic
+    optional_args:
+      netmiko_device_type: cisco_xr
+      config_command: show running-config
+
+  # Any NAPALM driver (core or community) works through 'driver':
+  # - name: sros01
+  #   host: 10.0.0.50
+  #   platform: sros
+  #   driver: sros            # requires 'pip install napalm-sros'
+
+  # Old gear that only speaks telnet / legacy SSH algorithms:
+  # - name: old-sw01
+  #   host: 10.0.0.99
+  #   platform: ios
+  #   optional_args:
+  #     transport: telnet
+  #     # disabled_algorithms: {pubkeys: [rsa-sha2-512, rsa-sha2-256]}

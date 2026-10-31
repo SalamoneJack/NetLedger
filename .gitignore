@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# NetLedger runtime files - never commit credentials or state
+data/
+netledger-demo/
+/netledger.yaml
+/inventory.yaml
+/netledger.env
+*.env
+!*.env.example
+!src/netledger/templates/netledger.env
+deploy/kubernetes/secret.env
+
+# Editors / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db

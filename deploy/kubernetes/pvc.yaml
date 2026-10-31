@@ -1,0 +1,13 @@
+# Holds the Git working copy and run state (alert de-duplication, dashboard history).
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: netledger-data
+  labels:
+    app.kubernetes.io/name: netledger
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi

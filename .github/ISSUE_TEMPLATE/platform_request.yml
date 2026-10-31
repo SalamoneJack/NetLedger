@@ -1,0 +1,21 @@
+name: Platform support / health parsing
+description: Add a platform, or fix CPU / memory / temperature parsing for one
+labels: [platform]
+body:
+  - type: input
+    id: platform
+    attributes:
+      label: Vendor, model and OS version
+      placeholder: e.g. Huawei S5735-L48T4X, V200R022C00
+    validations:
+      required: true
+  - type: textarea
+    id: outputs
+    attributes:
+      label: Command output
+      description: |
+        Paste the raw output of the relevant commands (see docs/platforms.md for which ones),
+        with secrets and addresses removed. Real output is the fastest way to a working parser.
+      render: text
+    validations:
+      required: true

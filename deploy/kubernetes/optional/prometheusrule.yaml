@@ -1,0 +1,72 @@
+# Prometheus Operator alerting rules (same rules as deploy/prometheus/netledger-alerts.yml).
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: netledger
+  labels:
+    app.kubernetes.io/name: netledger
+spec:
+  groups:
+    - name: netledger
+      rules:
+        - alert: NetLedgerBackupFailing
+          expr: netledger_backup_consecutive_failures >= 2
+          for: 15m
+          labels: {severity: warning}
+          annotations:
+            summary: "Configuration backup failing for {{ $labels.device }}"
+            description: "{{ $labels.device }} ({{ $labels.platform }}) has failed {{ $value }} backups in a row."
+        - alert: NetLedgerBackupStale
+          expr: time() - netledger_backup_last_success_timestamp_seconds > 2 * 86400
+          for: 1h
+          labels: {severity: warning}
+          annotations:
+            summary: "No successful backup of {{ $labels.device }} for 2 days"
+        - alert: NetLedgerDeviceDown
+          expr: netledger_device_up == 0
+          for: 10m
+          labels: {severity: critical}
+          annotations:
+            summary: "{{ $labels.device }} is not answering health checks"
+        - alert: NetLedgerHighCPU
+          expr: netledger_cpu_usage_percent > 90
+          for: 15m
+          labels: {severity: warning}
+          annotations:
+            summary: "CPU on {{ $labels.device }} at {{ $value | humanize }}%"
+        - alert: NetLedgerHighMemory
+          expr: netledger_memory_usage_percent > 90
+          for: 15m
+          labels: {severity: warning}
+          annotations:
+            summary: "Memory on {{ $labels.device }} at {{ $value | humanize }}%"
+        - alert: NetLedgerTemperature
+          expr: netledger_temperature_alert == 1
+          for: 10m
+          labels: {severity: warning}
+          annotations:
+            summary: "Temperature alarm on {{ $labels.device }} sensor {{ $labels.sensor }}"
+        - alert: NetLedgerFanFailed
+          expr: netledger_fan_ok == 0
+          for: 5m
+          labels: {severity: warning}
+          annotations:
+            summary: "Fan {{ $labels.fan }} failed on {{ $labels.device }}"
+        - alert: NetLedgerPowerSupplyFailed
+          expr: netledger_power_supply_ok == 0
+          for: 5m
+          labels: {severity: critical}
+          annotations:
+            summary: "Power supply {{ $labels.psu }} failed on {{ $labels.device }}"
+        - alert: NetLedgerUnsavedConfiguration
+          expr: netledger_config_unsaved == 1
+          for: 24h
+          labels: {severity: info}
+          annotations:
+            summary: "{{ $labels.device }} has had unsaved configuration changes for a day"
+        - alert: NetLedgerRepositoryError
+          expr: netledger_backup_run_error == 1
+          for: 30m
+          labels: {severity: critical}
+          annotations:
+            summary: "NetLedger cannot fetch from or push to the backup repository"

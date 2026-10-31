@@ -1,0 +1,267 @@
+<svg class="rich-terminal" viewBox="0 0 1629 1318.8" xmlns="http://www.w3.org/2000/svg">
+    <!-- Generated with Rich https://www.textualize.io -->
+    <style>
+
+    @font-face {
+        font-family: "Fira Code";
+        src: local("FiraCode-Regular"),
+                url("https://cdnjs.cloudflare.com/ajax/libs/firacode/6.2.0/woff2/FiraCode-Regular.woff2") format("woff2"),
+                url("https://cdnjs.cloudflare.com/ajax/libs/firacode/6.2.0/woff/FiraCode-Regular.woff") format("woff");
+        font-style: normal;
+        font-weight: 400;
+    }
+    @font-face {
+        font-family: "Fira Code";
+        src: local("FiraCode-Bold"),
+                url("https://cdnjs.cloudflare.com/ajax/libs/firacode/6.2.0/woff2/FiraCode-Bold.woff2") format("woff2"),
+                url("https://cdnjs.cloudflare.com/ajax/libs/firacode/6.2.0/woff/FiraCode-Bold.woff") format("woff");
+        font-style: bold;
+        font-weight: 700;
+    }
+
+    .terminal-2091909012-matrix {
+        font-family: Fira Code, monospace;
+        font-size: 20px;
+        line-height: 24.4px;
+        font-variant-east-asian: full-width;
+    }
+
+    .terminal-2091909012-title {
+        font-size: 18px;
+        font-weight: bold;
+        font-family: arial;
+    }
+
+    .terminal-2091909012-r1 { fill: #98a84b;font-weight: bold }
+.terminal-2091909012-r2 { fill: #c5c8c6;font-weight: bold }
+.terminal-2091909012-r3 { fill: #c5c8c6 }
+.terminal-2091909012-r4 { fill: #98a84b }
+.terminal-2091909012-r5 { fill: #d0b344 }
+.terminal-2091909012-r6 { fill: #9e9e9e }
+    </style>
+
+    <defs>
+    <clipPath id="terminal-2091909012-clip-terminal">
+      <rect x="0" y="0" width="1609.3999999999999" height="1267.8" />
+    </clipPath>
+    <clipPath id="terminal-2091909012-line-0">
+    <rect x="0" y="1.5" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-1">
+    <rect x="0" y="25.9" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-2">
+    <rect x="0" y="50.3" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-3">
+    <rect x="0" y="74.7" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-4">
+    <rect x="0" y="99.1" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-5">
+    <rect x="0" y="123.5" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-6">
+    <rect x="0" y="147.9" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-7">
+    <rect x="0" y="172.3" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-8">
+    <rect x="0" y="196.7" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-9">
+    <rect x="0" y="221.1" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-10">
+    <rect x="0" y="245.5" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-11">
+    <rect x="0" y="269.9" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-12">
+    <rect x="0" y="294.3" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-13">
+    <rect x="0" y="318.7" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-14">
+    <rect x="0" y="343.1" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-15">
+    <rect x="0" y="367.5" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-16">
+    <rect x="0" y="391.9" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-17">
+    <rect x="0" y="416.3" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-18">
+    <rect x="0" y="440.7" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-19">
+    <rect x="0" y="465.1" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-20">
+    <rect x="0" y="489.5" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-21">
+    <rect x="0" y="513.9" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-22">
+    <rect x="0" y="538.3" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-23">
+    <rect x="0" y="562.7" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-24">
+    <rect x="0" y="587.1" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-25">
+    <rect x="0" y="611.5" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-26">
+    <rect x="0" y="635.9" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-27">
+    <rect x="0" y="660.3" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-28">
+    <rect x="0" y="684.7" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-29">
+    <rect x="0" y="709.1" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-30">
+    <rect x="0" y="733.5" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-31">
+    <rect x="0" y="757.9" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-32">
+    <rect x="0" y="782.3" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-33">
+    <rect x="0" y="806.7" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-34">
+    <rect x="0" y="831.1" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-35">
+    <rect x="0" y="855.5" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-36">
+    <rect x="0" y="879.9" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-37">
+    <rect x="0" y="904.3" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-38">
+    <rect x="0" y="928.7" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-39">
+    <rect x="0" y="953.1" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-40">
+    <rect x="0" y="977.5" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-41">
+    <rect x="0" y="1001.9" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-42">
+    <rect x="0" y="1026.3" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-43">
+    <rect x="0" y="1050.7" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-44">
+    <rect x="0" y="1075.1" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-45">
+    <rect x="0" y="1099.5" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-46">
+    <rect x="0" y="1123.9" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-47">
+    <rect x="0" y="1148.3" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-48">
+    <rect x="0" y="1172.7" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-49">
+    <rect x="0" y="1197.1" width="1610.4" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2091909012-line-50">
+    <rect x="0" y="1221.5" width="1610.4" height="24.65"/>
+            </clipPath>
+    </defs>
+
+    <rect fill="#292929" stroke="rgba(255,255,255,0.35)" stroke-width="1" x="1" y="1" width="1627" height="1316.8" rx="8"/><text class="terminal-2091909012-title" fill="#c5c8c6" text-anchor="middle" x="813" y="27">netledger&#160;platforms</text>
+            <g transform="translate(26,22)">
+            <circle cx="0" cy="0" r="7" fill="#ff5f57"/>
+            <circle cx="22" cy="0" r="7" fill="#febc2e"/>
+            <circle cx="44" cy="0" r="7" fill="#28c840"/>
+            </g>
+        
+    <g transform="translate(9, 41)" clip-path="url(#terminal-2091909012-clip-terminal)">
+    
+    <g class="terminal-2091909012-matrix">
+    <text class="terminal-2091909012-r1" x="0" y="20" textLength="24.4" clip-path="url(#terminal-2091909012-line-0)">❯&#160;</text><text class="terminal-2091909012-r2" x="24.4" y="20" textLength="231.8" clip-path="url(#terminal-2091909012-line-0)">netledger&#160;platforms</text><text class="terminal-2091909012-r3" x="1610.4" y="20" textLength="12.2" clip-path="url(#terminal-2091909012-line-0)">
+</text><text class="terminal-2091909012-r3" x="1610.4" y="44.4" textLength="12.2" clip-path="url(#terminal-2091909012-line-1)">
+</text><text class="terminal-2091909012-r2" x="12.2" y="68.8" textLength="158.6" clip-path="url(#terminal-2091909012-line-2)">Platform&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r2" x="207.4" y="68.8" textLength="341.6" clip-path="url(#terminal-2091909012-line-2)">Name&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r2" x="585.6" y="68.8" textLength="244" clip-path="url(#terminal-2091909012-line-2)">Driver&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r2" x="866.2" y="68.8" textLength="341.6" clip-path="url(#terminal-2091909012-line-2)">Health&#160;data&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r2" x="1244.4" y="68.8" textLength="353.8" clip-path="url(#terminal-2091909012-line-2)">Aliases&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="1610.4" y="68.8" textLength="12.2" clip-path="url(#terminal-2091909012-line-2)">
+</text><text class="terminal-2091909012-r3" x="0" y="93.2" textLength="1610.4" clip-path="url(#terminal-2091909012-line-3)">&#160;──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────&#160;</text><text class="terminal-2091909012-r3" x="1610.4" y="93.2" textLength="12.2" clip-path="url(#terminal-2091909012-line-3)">
+</text><text class="terminal-2091909012-r2" x="12.2" y="117.6" textLength="158.6" clip-path="url(#terminal-2091909012-line-4)">eos&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="207.4" y="117.6" textLength="341.6" clip-path="url(#terminal-2091909012-line-4)">Arista&#160;EOS&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="585.6" y="117.6" textLength="244" clip-path="url(#terminal-2091909012-line-4)">napalm:eos&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r4" x="866.2" y="117.6" textLength="341.6" clip-path="url(#terminal-2091909012-line-4)">cpu&#160;·&#160;memory&#160;·&#160;temp&#160;·&#160;fans&#160;·</text><text class="terminal-2091909012-r3" x="1244.4" y="117.6" textLength="353.8" clip-path="url(#terminal-2091909012-line-4)">arista,&#160;arista_eos&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="1610.4" y="117.6" textLength="12.2" clip-path="url(#terminal-2091909012-line-4)">
+</text><text class="terminal-2091909012-r4" x="866.2" y="142" textLength="36.6" clip-path="url(#terminal-2091909012-line-5)">psu</text><text class="terminal-2091909012-r3" x="1610.4" y="142" textLength="12.2" clip-path="url(#terminal-2091909012-line-5)">
+</text><text class="terminal-2091909012-r2" x="12.2" y="166.4" textLength="158.6" clip-path="url(#terminal-2091909012-line-6)">gaia&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="207.4" y="166.4" textLength="341.6" clip-path="url(#terminal-2091909012-line-6)">Check&#160;Point&#160;Gaia&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="585.6" y="166.4" textLength="244" clip-path="url(#terminal-2091909012-line-6)">built-in&#160;checkpoint&#160;</text><text class="terminal-2091909012-r5" x="866.2" y="166.4" textLength="85.4" clip-path="url(#terminal-2091909012-line-6)">partial</text><text class="terminal-2091909012-r3" x="1244.4" y="166.4" textLength="353.8" clip-path="url(#terminal-2091909012-line-6)">checkpoint_gaia,&#160;checkpoint&#160;&#160;</text><text class="terminal-2091909012-r3" x="1610.4" y="166.4" textLength="12.2" clip-path="url(#terminal-2091909012-line-6)">
+</text><text class="terminal-2091909012-r2" x="12.2" y="190.8" textLength="158.6" clip-path="url(#terminal-2091909012-line-7)">aireos&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="207.4" y="190.8" textLength="341.6" clip-path="url(#terminal-2091909012-line-7)">Cisco&#160;AireOS&#160;Wireless&#160;LAN&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="585.6" y="190.8" textLength="244" clip-path="url(#terminal-2091909012-line-7)">built-in&#160;cisco&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r5" x="866.2" y="190.8" textLength="85.4" clip-path="url(#terminal-2091909012-line-7)">partial</text><text class="terminal-2091909012-r3" x="1244.4" y="190.8" textLength="353.8" clip-path="url(#terminal-2091909012-line-7)">cisco_wlc,&#160;wlc&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="1610.4" y="190.8" textLength="12.2" clip-path="url(#terminal-2091909012-line-7)">
+</text><text class="terminal-2091909012-r3" x="207.4" y="215.2" textLength="341.6" clip-path="url(#terminal-2091909012-line-8)">Controller&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="1610.4" y="215.2" textLength="12.2" clip-path="url(#terminal-2091909012-line-8)">
+</text><text class="terminal-2091909012-r2" x="12.2" y="239.6" textLength="158.6" clip-path="url(#terminal-2091909012-line-9)">asa&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="207.4" y="239.6" textLength="341.6" clip-path="url(#terminal-2091909012-line-9)">Cisco&#160;ASA&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="585.6" y="239.6" textLength="244" clip-path="url(#terminal-2091909012-line-9)">built-in&#160;cisco&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r4" x="866.2" y="239.6" textLength="341.6" clip-path="url(#terminal-2091909012-line-9)">cpu&#160;·&#160;memory&#160;·&#160;temp&#160;·&#160;fans&#160;·</text><text class="terminal-2091909012-r3" x="1244.4" y="239.6" textLength="353.8" clip-path="url(#terminal-2091909012-line-9)">cisco_asa&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="1610.4" y="239.6" textLength="12.2" clip-path="url(#terminal-2091909012-line-9)">
+</text><text class="terminal-2091909012-r4" x="866.2" y="264" textLength="36.6" clip-path="url(#terminal-2091909012-line-10)">psu</text><text class="terminal-2091909012-r3" x="1610.4" y="264" textLength="12.2" clip-path="url(#terminal-2091909012-line-10)">
+</text><text class="terminal-2091909012-r2" x="12.2" y="288.4" textLength="158.6" clip-path="url(#terminal-2091909012-line-11)">cisco_smb&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="207.4" y="288.4" textLength="341.6" clip-path="url(#terminal-2091909012-line-11)">Cisco&#160;Small&#160;Business&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="585.6" y="288.4" textLength="244" clip-path="url(#terminal-2091909012-line-11)">built-in&#160;cisco&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r5" x="866.2" y="288.4" textLength="85.4" clip-path="url(#terminal-2091909012-line-11)">partial</text><text class="terminal-2091909012-r3" x="1244.4" y="288.4" textLength="353.8" clip-path="url(#terminal-2091909012-line-11)">cisco_s300,&#160;sg300,&#160;sg350,&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="1610.4" y="288.4" textLength="12.2" clip-path="url(#terminal-2091909012-line-11)">
+</text><text class="terminal-2091909012-r3" x="207.4" y="312.8" textLength="341.6" clip-path="url(#terminal-2091909012-line-12)">(SG300/350/550,&#160;CBS)&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="1244.4" y="312.8" textLength="353.8" clip-path="url(#terminal-2091909012-line-12)">sg550&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="1610.4" y="312.8" textLength="12.2" clip-path="url(#terminal-2091909012-line-12)">
+</text><text class="terminal-2091909012-r2" x="12.2" y="337.2" textLength="158.6" clip-path="url(#terminal-2091909012-line-13)">ios&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="207.4" y="337.2" textLength="341.6" clip-path="url(#terminal-2091909012-line-13)">Cisco&#160;IOS&#160;/&#160;IOS-XE&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="585.6" y="337.2" textLength="244" clip-path="url(#terminal-2091909012-line-13)">built-in&#160;ios&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r4" x="866.2" y="337.2" textLength="341.6" clip-path="url(#terminal-2091909012-line-13)">cpu&#160;·&#160;memory&#160;·&#160;temp&#160;·&#160;fans&#160;·</text><text class="terminal-2091909012-r3" x="1244.4" y="337.2" textLength="353.8" clip-path="url(#terminal-2091909012-line-13)">cisco_ios,&#160;iosxe,&#160;ios_xe,&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="1610.4" y="337.2" textLength="12.2" clip-path="url(#terminal-2091909012-line-13)">
+</text><text class="terminal-2091909012-r4" x="866.2" y="361.6" textLength="36.6" clip-path="url(#terminal-2091909012-line-14)">psu</text><text class="terminal-2091909012-r3" x="1244.4" y="361.6" textLength="353.8" clip-path="url(#terminal-2091909012-line-14)">cisco_xe&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="1610.4" y="361.6" textLength="12.2" clip-path="url(#terminal-2091909012-line-14)">
+</text><text class="terminal-2091909012-r2" x="12.2" y="386" textLength="158.6" clip-path="url(#terminal-2091909012-line-15)">iosxr&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="207.4" y="386" textLength="341.6" clip-path="url(#terminal-2091909012-line-15)">Cisco&#160;IOS-XR&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="585.6" y="386" textLength="244" clip-path="url(#terminal-2091909012-line-15)">napalm:iosxr&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r4" x="866.2" y="386" textLength="341.6" clip-path="url(#terminal-2091909012-line-15)">cpu&#160;·&#160;memory&#160;·&#160;temp&#160;·&#160;fans&#160;·</text><text class="terminal-2091909012-r3" x="1244.4" y="386" textLength="353.8" clip-path="url(#terminal-2091909012-line-15)">cisco_xr,&#160;iosxr_xml&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="1610.4" y="386" textLength="12.2" clip-path="url(#terminal-2091909012-line-15)">
+</text><text class="terminal-2091909012-r4" x="866.2" y="410.4" textLength="36.6" clip-path="url(#terminal-2091909012-line-16)">psu</text><text class="terminal-2091909012-r3" x="1610.4" y="410.4" textLength="12.2" clip-path="url(#terminal-2091909012-line-16)">
+</text><text class="terminal-2091909012-r2" x="12.2" y="434.8" textLength="158.6" clip-path="url(#terminal-2091909012-line-17)">iosxr_netconf</text><text class="terminal-2091909012-r3" x="207.4" y="434.8" textLength="341.6" clip-path="url(#terminal-2091909012-line-17)">Cisco&#160;IOS-XR&#160;(NETCONF)&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="585.6" y="434.8" textLength="244" clip-path="url(#terminal-2091909012-line-17)">napalm:iosxr_netconf</text><text class="terminal-2091909012-r4" x="866.2" y="434.8" textLength="341.6" clip-path="url(#terminal-2091909012-line-17)">cpu&#160;·&#160;memory&#160;·&#160;temp&#160;·&#160;fans&#160;·</text><text class="terminal-2091909012-r3" x="1610.4" y="434.8" textLength="12.2" clip-path="url(#terminal-2091909012-line-17)">
+</text><text class="terminal-2091909012-r4" x="866.2" y="459.2" textLength="36.6" clip-path="url(#terminal-2091909012-line-18)">psu</text><text class="terminal-2091909012-r3" x="1610.4" y="459.2" textLength="12.2" clip-path="url(#terminal-2091909012-line-18)">
+</text><text class="terminal-2091909012-r2" x="12.2" y="483.6" textLength="158.6" clip-path="url(#terminal-2091909012-line-19)">nxos&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="207.4" y="483.6" textLength="341.6" clip-path="url(#terminal-2091909012-line-19)">Cisco&#160;NX-OS&#160;(SSH)&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="585.6" y="483.6" textLength="244" clip-path="url(#terminal-2091909012-line-19)">napalm:nxos_ssh&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r4" x="866.2" y="483.6" textLength="341.6" clip-path="url(#terminal-2091909012-line-19)">cpu&#160;·&#160;memory&#160;·&#160;temp&#160;·&#160;fans&#160;·</text><text class="terminal-2091909012-r3" x="1244.4" y="483.6" textLength="353.8" clip-path="url(#terminal-2091909012-line-19)">cisco_nxos,&#160;nxos_ssh,&#160;nexus&#160;&#160;</text><text class="terminal-2091909012-r3" x="1610.4" y="483.6" textLength="12.2" clip-path="url(#terminal-2091909012-line-19)">
+</text><text class="terminal-2091909012-r4" x="866.2" y="508" textLength="36.6" clip-path="url(#terminal-2091909012-line-20)">psu</text><text class="terminal-2091909012-r3" x="1610.4" y="508" textLength="12.2" clip-path="url(#terminal-2091909012-line-20)">
+</text><text class="terminal-2091909012-r2" x="12.2" y="532.4" textLength="158.6" clip-path="url(#terminal-2091909012-line-21)">nxos_api&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="207.4" y="532.4" textLength="341.6" clip-path="url(#terminal-2091909012-line-21)">Cisco&#160;NX-OS&#160;(NX-API)&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="585.6" y="532.4" textLength="244" clip-path="url(#terminal-2091909012-line-21)">napalm:nxos&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r4" x="866.2" y="532.4" textLength="341.6" clip-path="url(#terminal-2091909012-line-21)">cpu&#160;·&#160;memory&#160;·&#160;temp&#160;·&#160;fans&#160;·</text><text class="terminal-2091909012-r3" x="1244.4" y="532.4" textLength="353.8" clip-path="url(#terminal-2091909012-line-21)">nxapi,&#160;nxos_nxapi&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="1610.4" y="532.4" textLength="12.2" clip-path="url(#terminal-2091909012-line-21)">
+</text><text class="terminal-2091909012-r4" x="866.2" y="556.8" textLength="36.6" clip-path="url(#terminal-2091909012-line-22)">psu</text><text class="terminal-2091909012-r3" x="1610.4" y="556.8" textLength="12.2" clip-path="url(#terminal-2091909012-line-22)">
+</text><text class="terminal-2091909012-r2" x="12.2" y="581.2" textLength="158.6" clip-path="url(#terminal-2091909012-line-23)">dellos10&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="207.4" y="581.2" textLength="341.6" clip-path="url(#terminal-2091909012-line-23)">Dell&#160;EMC&#160;SmartFabric&#160;OS10&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="585.6" y="581.2" textLength="244" clip-path="url(#terminal-2091909012-line-23)">built-in&#160;dell&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r4" x="866.2" y="581.2" textLength="341.6" clip-path="url(#terminal-2091909012-line-23)">cpu&#160;·&#160;memory&#160;·&#160;temp&#160;·&#160;fans&#160;·</text><text class="terminal-2091909012-r3" x="1244.4" y="581.2" textLength="353.8" clip-path="url(#terminal-2091909012-line-23)">dell_os10,&#160;os10&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="1610.4" y="581.2" textLength="12.2" clip-path="url(#terminal-2091909012-line-23)">
+</text><text class="terminal-2091909012-r4" x="866.2" y="605.6" textLength="36.6" clip-path="url(#terminal-2091909012-line-24)">psu</text><text class="terminal-2091909012-r3" x="1610.4" y="605.6" textLength="12.2" clip-path="url(#terminal-2091909012-line-24)">
+</text><text class="terminal-2091909012-r2" x="12.2" y="630" textLength="158.6" clip-path="url(#terminal-2091909012-line-25)">exos&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="207.4" y="630" textLength="341.6" clip-path="url(#terminal-2091909012-line-25)">Extreme&#160;Networks&#160;EXOS&#160;/&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="585.6" y="630" textLength="244" clip-path="url(#terminal-2091909012-line-25)">built-in&#160;extreme&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r4" x="866.2" y="630" textLength="341.6" clip-path="url(#terminal-2091909012-line-25)">cpu&#160;·&#160;memory&#160;·&#160;temp&#160;·&#160;fans&#160;·</text><text class="terminal-2091909012-r3" x="1244.4" y="630" textLength="353.8" clip-path="url(#terminal-2091909012-line-25)">extreme_exos,&#160;extreme,&#160;xos,&#160;&#160;</text><text class="terminal-2091909012-r3" x="1610.4" y="630" textLength="12.2" clip-path="url(#terminal-2091909012-line-25)">
+</text><text class="terminal-2091909012-r3" x="207.4" y="654.4" textLength="341.6" clip-path="url(#terminal-2091909012-line-26)">Switch&#160;Engine&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r4" x="866.2" y="654.4" textLength="36.6" clip-path="url(#terminal-2091909012-line-26)">psu</text><text class="terminal-2091909012-r3" x="1244.4" y="654.4" textLength="353.8" clip-path="url(#terminal-2091909012-line-26)">switch_engine&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="1610.4" y="654.4" textLength="12.2" clip-path="url(#terminal-2091909012-line-26)">
+</text><text class="terminal-2091909012-r2" x="12.2" y="678.8" textLength="158.6" clip-path="url(#terminal-2091909012-line-27)">fortios&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="207.4" y="678.8" textLength="341.6" clip-path="url(#terminal-2091909012-line-27)">Fortinet&#160;FortiGate&#160;(FortiOS)</text><text class="terminal-2091909012-r3" x="585.6" y="678.8" textLength="244" clip-path="url(#terminal-2091909012-line-27)">built-in&#160;fortinet&#160;&#160;&#160;</text><text class="terminal-2091909012-r4" x="866.2" y="678.8" textLength="341.6" clip-path="url(#terminal-2091909012-line-27)">cpu&#160;·&#160;memory&#160;·&#160;temp&#160;·&#160;fans&#160;·</text><text class="terminal-2091909012-r3" x="1244.4" y="678.8" textLength="353.8" clip-path="url(#terminal-2091909012-line-27)">fortinet,&#160;fortigate,&#160;forti&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="1610.4" y="678.8" textLength="12.2" clip-path="url(#terminal-2091909012-line-27)">
+</text><text class="terminal-2091909012-r4" x="866.2" y="703.2" textLength="36.6" clip-path="url(#terminal-2091909012-line-28)">psu</text><text class="terminal-2091909012-r3" x="1610.4" y="703.2" textLength="12.2" clip-path="url(#terminal-2091909012-line-28)">
+</text><text class="terminal-2091909012-r2" x="12.2" y="727.6" textLength="158.6" clip-path="url(#terminal-2091909012-line-29)">generic&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="207.4" y="727.6" textLength="341.6" clip-path="url(#terminal-2091909012-line-29)">Any&#160;Netmiko-supported&#160;device</text><text class="terminal-2091909012-r3" x="585.6" y="727.6" textLength="244" clip-path="url(#terminal-2091909012-line-29)">built-in&#160;generic&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r6" x="866.2" y="727.6" textLength="207.4" clip-path="url(#terminal-2091909012-line-29)">reachability&#160;only</text><text class="terminal-2091909012-r3" x="1244.4" y="727.6" textLength="353.8" clip-path="url(#terminal-2091909012-line-29)">netmiko,&#160;custom&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="1610.4" y="727.6" textLength="12.2" clip-path="url(#terminal-2091909012-line-29)">
+</text><text class="terminal-2091909012-r3" x="207.4" y="752" textLength="341.6" clip-path="url(#terminal-2091909012-line-30)">(config&#160;only)&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="1610.4" y="752" textLength="12.2" clip-path="url(#terminal-2091909012-line-30)">
+</text><text class="terminal-2091909012-r2" x="12.2" y="776.4" textLength="158.6" clip-path="url(#terminal-2091909012-line-31)">comware&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="207.4" y="776.4" textLength="341.6" clip-path="url(#terminal-2091909012-line-31)">HPE&#160;Comware&#160;/&#160;H3C&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="585.6" y="776.4" textLength="244" clip-path="url(#terminal-2091909012-line-31)">built-in&#160;hpe&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r4" x="866.2" y="776.4" textLength="341.6" clip-path="url(#terminal-2091909012-line-31)">cpu&#160;·&#160;memory&#160;·&#160;temp&#160;·&#160;fans&#160;·</text><text class="terminal-2091909012-r3" x="1244.4" y="776.4" textLength="353.8" clip-path="url(#terminal-2091909012-line-31)">hp_comware,&#160;hpe_comware,&#160;h3c&#160;</text><text class="terminal-2091909012-r3" x="1610.4" y="776.4" textLength="12.2" clip-path="url(#terminal-2091909012-line-31)">
+</text><text class="terminal-2091909012-r4" x="866.2" y="800.8" textLength="36.6" clip-path="url(#terminal-2091909012-line-32)">psu</text><text class="terminal-2091909012-r3" x="1610.4" y="800.8" textLength="12.2" clip-path="url(#terminal-2091909012-line-32)">
+</text><text class="terminal-2091909012-r2" x="12.2" y="825.2" textLength="158.6" clip-path="url(#terminal-2091909012-line-33)">aoscx&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="207.4" y="825.2" textLength="341.6" clip-path="url(#terminal-2091909012-line-33)">HPE&#160;Aruba&#160;AOS-CX&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="585.6" y="825.2" textLength="244" clip-path="url(#terminal-2091909012-line-33)">built-in&#160;hpe&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r4" x="866.2" y="825.2" textLength="341.6" clip-path="url(#terminal-2091909012-line-33)">cpu&#160;·&#160;memory&#160;·&#160;temp&#160;·&#160;fans&#160;·</text><text class="terminal-2091909012-r3" x="1244.4" y="825.2" textLength="353.8" clip-path="url(#terminal-2091909012-line-33)">aruba_aoscx,&#160;aos_cx,&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="1610.4" y="825.2" textLength="12.2" clip-path="url(#terminal-2091909012-line-33)">
+</text><text class="terminal-2091909012-r4" x="866.2" y="849.6" textLength="36.6" clip-path="url(#terminal-2091909012-line-34)">psu</text><text class="terminal-2091909012-r3" x="1244.4" y="849.6" textLength="353.8" clip-path="url(#terminal-2091909012-line-34)">arubaos_cx,&#160;aruba_cx&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="1610.4" y="849.6" textLength="12.2" clip-path="url(#terminal-2091909012-line-34)">
+</text><text class="terminal-2091909012-r2" x="12.2" y="874" textLength="158.6" clip-path="url(#terminal-2091909012-line-35)">procurve&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="207.4" y="874" textLength="341.6" clip-path="url(#terminal-2091909012-line-35)">HPE&#160;Aruba&#160;AOS-S&#160;(ProCurve)&#160;&#160;</text><text class="terminal-2091909012-r3" x="585.6" y="874" textLength="244" clip-path="url(#terminal-2091909012-line-35)">built-in&#160;hpe&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r4" x="866.2" y="874" textLength="341.6" clip-path="url(#terminal-2091909012-line-35)">cpu&#160;·&#160;memory&#160;·&#160;temp&#160;·&#160;fans&#160;·</text><text class="terminal-2091909012-r3" x="1244.4" y="874" textLength="353.8" clip-path="url(#terminal-2091909012-line-35)">hp_procurve,&#160;aruba_osswitch,&#160;</text><text class="terminal-2091909012-r3" x="1610.4" y="874" textLength="12.2" clip-path="url(#terminal-2091909012-line-35)">
+</text><text class="terminal-2091909012-r4" x="866.2" y="898.4" textLength="36.6" clip-path="url(#terminal-2091909012-line-36)">psu</text><text class="terminal-2091909012-r3" x="1244.4" y="898.4" textLength="353.8" clip-path="url(#terminal-2091909012-line-36)">aruba_procurve,&#160;aos_s&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="1610.4" y="898.4" textLength="12.2" clip-path="url(#terminal-2091909012-line-36)">
+</text><text class="terminal-2091909012-r2" x="12.2" y="922.8" textLength="158.6" clip-path="url(#terminal-2091909012-line-37)">huawei_vrp&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="207.4" y="922.8" textLength="341.6" clip-path="url(#terminal-2091909012-line-37)">Huawei&#160;VRP&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="585.6" y="922.8" textLength="244" clip-path="url(#terminal-2091909012-line-37)">built-in&#160;huawei&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r4" x="866.2" y="922.8" textLength="341.6" clip-path="url(#terminal-2091909012-line-37)">cpu&#160;·&#160;memory&#160;·&#160;temp&#160;·&#160;fans&#160;·</text><text class="terminal-2091909012-r3" x="1244.4" y="922.8" textLength="353.8" clip-path="url(#terminal-2091909012-line-37)">huawei,&#160;vrp&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="1610.4" y="922.8" textLength="12.2" clip-path="url(#terminal-2091909012-line-37)">
+</text><text class="terminal-2091909012-r4" x="866.2" y="947.2" textLength="36.6" clip-path="url(#terminal-2091909012-line-38)">psu</text><text class="terminal-2091909012-r3" x="1610.4" y="947.2" textLength="12.2" clip-path="url(#terminal-2091909012-line-38)">
+</text><text class="terminal-2091909012-r2" x="12.2" y="971.6" textLength="158.6" clip-path="url(#terminal-2091909012-line-39)">junos&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="207.4" y="971.6" textLength="341.6" clip-path="url(#terminal-2091909012-line-39)">Juniper&#160;Junos&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="585.6" y="971.6" textLength="244" clip-path="url(#terminal-2091909012-line-39)">napalm:junos&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r4" x="866.2" y="971.6" textLength="341.6" clip-path="url(#terminal-2091909012-line-39)">cpu&#160;·&#160;memory&#160;·&#160;temp&#160;·&#160;fans&#160;·</text><text class="terminal-2091909012-r3" x="1244.4" y="971.6" textLength="353.8" clip-path="url(#terminal-2091909012-line-39)">juniper,&#160;juniper_junos,&#160;srx,&#160;</text><text class="terminal-2091909012-r3" x="1610.4" y="971.6" textLength="12.2" clip-path="url(#terminal-2091909012-line-39)">
+</text><text class="terminal-2091909012-r4" x="866.2" y="996" textLength="36.6" clip-path="url(#terminal-2091909012-line-40)">psu</text><text class="terminal-2091909012-r3" x="1244.4" y="996" textLength="353.8" clip-path="url(#terminal-2091909012-line-40)">ex&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="1610.4" y="996" textLength="12.2" clip-path="url(#terminal-2091909012-line-40)">
+</text><text class="terminal-2091909012-r2" x="12.2" y="1020.4" textLength="158.6" clip-path="url(#terminal-2091909012-line-41)">routeros&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="207.4" y="1020.4" textLength="341.6" clip-path="url(#terminal-2091909012-line-41)">MikroTik&#160;RouterOS&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="585.6" y="1020.4" textLength="244" clip-path="url(#terminal-2091909012-line-41)">built-in&#160;mikrotik&#160;&#160;&#160;</text><text class="terminal-2091909012-r4" x="866.2" y="1020.4" textLength="341.6" clip-path="url(#terminal-2091909012-line-41)">cpu&#160;·&#160;memory&#160;·&#160;temp&#160;·&#160;fans&#160;·</text><text class="terminal-2091909012-r3" x="1244.4" y="1020.4" textLength="353.8" clip-path="url(#terminal-2091909012-line-41)">mikrotik,&#160;mikrotik_routeros,&#160;</text><text class="terminal-2091909012-r3" x="1610.4" y="1020.4" textLength="12.2" clip-path="url(#terminal-2091909012-line-41)">
+</text><text class="terminal-2091909012-r4" x="866.2" y="1044.8" textLength="36.6" clip-path="url(#terminal-2091909012-line-42)">psu</text><text class="terminal-2091909012-r3" x="1244.4" y="1044.8" textLength="353.8" clip-path="url(#terminal-2091909012-line-42)">ros&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="1610.4" y="1044.8" textLength="12.2" clip-path="url(#terminal-2091909012-line-42)">
+</text><text class="terminal-2091909012-r2" x="12.2" y="1069.2" textLength="158.6" clip-path="url(#terminal-2091909012-line-43)">panos&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="207.4" y="1069.2" textLength="341.6" clip-path="url(#terminal-2091909012-line-43)">Palo&#160;Alto&#160;Networks&#160;PAN-OS&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="585.6" y="1069.2" textLength="244" clip-path="url(#terminal-2091909012-line-43)">built-in&#160;paloalto&#160;&#160;&#160;</text><text class="terminal-2091909012-r4" x="866.2" y="1069.2" textLength="341.6" clip-path="url(#terminal-2091909012-line-43)">cpu&#160;·&#160;memory&#160;·&#160;temp&#160;·&#160;fans&#160;·</text><text class="terminal-2091909012-r3" x="1244.4" y="1069.2" textLength="353.8" clip-path="url(#terminal-2091909012-line-43)">paloalto,&#160;paloalto_panos,&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="1610.4" y="1069.2" textLength="12.2" clip-path="url(#terminal-2091909012-line-43)">
+</text><text class="terminal-2091909012-r4" x="866.2" y="1093.6" textLength="36.6" clip-path="url(#terminal-2091909012-line-44)">psu</text><text class="terminal-2091909012-r3" x="1244.4" y="1093.6" textLength="353.8" clip-path="url(#terminal-2091909012-line-44)">pan_os,&#160;palo&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="1610.4" y="1093.6" textLength="12.2" clip-path="url(#terminal-2091909012-line-44)">
+</text><text class="terminal-2091909012-r2" x="12.2" y="1118" textLength="158.6" clip-path="url(#terminal-2091909012-line-45)">fastiron&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="207.4" y="1118" textLength="341.6" clip-path="url(#terminal-2091909012-line-45)">Ruckus&#160;ICX&#160;/&#160;Brocade&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="585.6" y="1118" textLength="244" clip-path="url(#terminal-2091909012-line-45)">built-in&#160;ruckus&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r4" x="866.2" y="1118" textLength="341.6" clip-path="url(#terminal-2091909012-line-45)">cpu&#160;·&#160;memory&#160;·&#160;temp&#160;·&#160;fans&#160;·</text><text class="terminal-2091909012-r3" x="1244.4" y="1118" textLength="353.8" clip-path="url(#terminal-2091909012-line-45)">ruckus_fastiron,&#160;icx,&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="1610.4" y="1118" textLength="12.2" clip-path="url(#terminal-2091909012-line-45)">
+</text><text class="terminal-2091909012-r3" x="207.4" y="1142.4" textLength="341.6" clip-path="url(#terminal-2091909012-line-46)">FastIron&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r4" x="866.2" y="1142.4" textLength="36.6" clip-path="url(#terminal-2091909012-line-46)">psu</text><text class="terminal-2091909012-r3" x="1244.4" y="1142.4" textLength="353.8" clip-path="url(#terminal-2091909012-line-46)">ruckus_icx,&#160;brocade_fastiron&#160;</text><text class="terminal-2091909012-r3" x="1610.4" y="1142.4" textLength="12.2" clip-path="url(#terminal-2091909012-line-46)">
+</text><text class="terminal-2091909012-r2" x="12.2" y="1166.8" textLength="158.6" clip-path="url(#terminal-2091909012-line-47)">edgeos&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="207.4" y="1166.8" textLength="341.6" clip-path="url(#terminal-2091909012-line-47)">Ubiquiti&#160;EdgeOS&#160;(EdgeRouter)</text><text class="terminal-2091909012-r3" x="585.6" y="1166.8" textLength="244" clip-path="url(#terminal-2091909012-line-47)">built-in&#160;vyos&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r5" x="866.2" y="1166.8" textLength="85.4" clip-path="url(#terminal-2091909012-line-47)">partial</text><text class="terminal-2091909012-r3" x="1244.4" y="1166.8" textLength="353.8" clip-path="url(#terminal-2091909012-line-47)">ubiquiti_edgerouter,&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="1610.4" y="1166.8" textLength="12.2" clip-path="url(#terminal-2091909012-line-47)">
+</text><text class="terminal-2091909012-r3" x="1244.4" y="1191.2" textLength="353.8" clip-path="url(#terminal-2091909012-line-48)">edgerouter,&#160;ubiquiti&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="1610.4" y="1191.2" textLength="12.2" clip-path="url(#terminal-2091909012-line-48)">
+</text><text class="terminal-2091909012-r2" x="12.2" y="1215.6" textLength="158.6" clip-path="url(#terminal-2091909012-line-49)">vyos&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="207.4" y="1215.6" textLength="341.6" clip-path="url(#terminal-2091909012-line-49)">VyOS&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r3" x="585.6" y="1215.6" textLength="244" clip-path="url(#terminal-2091909012-line-49)">built-in&#160;vyos&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2091909012-r5" x="866.2" y="1215.6" textLength="85.4" clip-path="url(#terminal-2091909012-line-49)">partial</text><text class="terminal-2091909012-r3" x="1610.4" y="1215.6" textLength="12.2" clip-path="url(#terminal-2091909012-line-49)">
+</text><text class="terminal-2091909012-r3" x="1610.4" y="1240" textLength="12.2" clip-path="url(#terminal-2091909012-line-50)">
+</text><text class="terminal-2091909012-r3" x="0" y="1264.4" textLength="475.8" clip-path="url(#terminal-2091909012-line-51)">Any&#160;other&#160;NAPALM&#160;driver&#160;works&#160;too:&#160;set&#160;</text><text class="terminal-2091909012-r2" x="475.8" y="1264.4" textLength="280.6" clip-path="url(#terminal-2091909012-line-51)">driver:&#160;&lt;napalm-driver&gt;</text><text class="terminal-2091909012-r3" x="756.4" y="1264.4" textLength="183" clip-path="url(#terminal-2091909012-line-51)">&#160;on&#160;the&#160;device.</text><text class="terminal-2091909012-r3" x="1610.4" y="1264.4" textLength="12.2" clip-path="url(#terminal-2091909012-line-51)">
+</text>
+    </g>
+    </g>
+</svg>

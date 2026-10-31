@@ -1,0 +1,18 @@
+# Your devices. See docs/inventory.md (YAML, CSV or NetBox).
+groups:
+  core:
+    platform: ios
+    role: core
+  firewalls:
+    platform: fortios
+    role: firewall
+
+devices:
+  - name: core-sw01
+    host: 10.0.0.11
+    site: hq
+    groups: [core]
+  - name: fw01
+    host: 10.0.0.1
+    site: hq
+    groups: [firewalls]

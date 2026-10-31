@@ -1,0 +1,152 @@
+# NetLedger configuration
+# Docs: https://github.com/SalamoneJack/NetLedger/blob/main/docs/configuration.md
+#
+# Any value can reference environment variables or files:
+#   ${VAR}            environment variable (error if unset)
+#   ${VAR:-default}   with a default
+#   ${file:/path}     contents of a file (Kubernetes/Docker secrets)
+# Variables in netledger.env next to this file are loaded automatically.
+
+# Where state and the local Git working copy live (default: ./data next to this file).
+# data_dir: /var/lib/netledger
+
+# One or more inventory files, directories or NetBox sources.
+inventory:
+  - inventory.yaml
+  # - type: netbox
+  #   url: https://netbox.example.com
+  #   token: ${NETBOX_TOKEN}
+  #   filters: {status: active, has_primary_ip: "true", tag: backup}
+  #   platform_map: {cisco-ios-xe: ios, fortigate: fortios}
+
+# Credential sets. Devices reference them by name; list several to fall back
+# (for example TACACS first, then a local break-glass account).
+credentials:
+  default:
+    username: ${NETLEDGER_USERNAME}
+    password: ${NETLEDGER_PASSWORD}
+    secret: ${NETLEDGER_ENABLE:-}          # enable password, if your devices need one
+  # local-fallback:
+  #   username: backup
+  #   password: ${file:/run/secrets/local_password}
+  # keys:
+  #   username: netledger
+  #   ssh_key: ~/.ssh/netledger_ed25519
+
+# Where configurations are committed.
+git:
+  backend: git                  # git (any Git server) | github (REST API, no git binary) | local
+  url: https://github.com/your-org/network-configs.git
+  branch: main
+  token: ${GIT_TOKEN}           # GitHub/GitLab/Gitea personal access token (HTTPS)
+  # username: x-access-token    # HTTPS username sent with the token
+  # ssh_key: ~/.ssh/netledger_deploy_key     # instead of a token, for git@ URLs
+  # github_app: {app_id: 123456, private_key: "${file:/run/secrets/github-app.pem}"}
+  author_name: NetLedger
+  author_email: netledger@example.com
+  commit_mode: per-device       # per-device (one commit per changed device) | per-run
+  base_dir: configs             # folder inside the repository
+  path: "{site}/{name}"         # placeholders: name site role platform vendor group host
+  index: true                   # keep a README.md device index in the repository
+  prune: false                  # delete folders of devices removed from the inventory
+
+backup:
+  workers: 10                   # parallel SSH/API sessions
+  timeout: 60                   # connect timeout (seconds)
+  command_timeout: 180          # max seconds to wait for one command (large configs!)
+  retries: 1
+  retrieve: [running]           # running, startup, candidate
+  facts: true                   # model / serial / OS version in device.json and the index
+  shrink_guard: 0.25            # refuse to commit a config that shrank below 25% of its lines
+  failure_alert_after: 2        # alert after N consecutive failed backups
+  # Extra show commands to archive next to the configuration (per platform, or "*" for all):
+  # commands:
+  #   ios: ["show inventory", {command: "show version", exclude: ["uptime is", "^Configuration register"]}]
+  #   fortios: ["get system ha status"]
+
+normalize:
+  secrets: keep                 # keep | mask (replace with <removed>) | hmac (stable keyed hash)
+  # secret_key: ${NETLEDGER_SECRET_KEY}    # required for hmac
+  # disable_rules: [fortios.enc]           # built-in rule ids to switch off
+  # rules:                                 # your own clean-up rules
+  #   - pattern: '^! Last reload'          # no replace = drop matching lines
+  #   - pattern: '(snmp-server location) .*'
+  #     replace: '\1 <hidden>'
+  #     platforms: [ios]
+
+health:
+  workers: 20
+  timeout: 30
+  thresholds:
+    cpu: {warning: 80, critical: 95}
+    memory: {warning: 85, critical: 95}
+    temperature: {warning: null, critical: null}   # null = trust the device's own alarm flags
+  fan_failure: warning
+  psu_failure: warning
+  reboot: warning
+  unreachable_after: 2          # consecutive failed checks before a device is critical
+  ignore_sensors: []            # regexes, e.g. ["^PS2"] for a deliberately empty PSU slot
+  history: true                 # keep every check (data/history.db) for trends and forecasts
+  history_days: 30
+  forecast_days: 7              # alert when memory/temperature will cross a threshold within 7 days
+  lldp: true                    # neighbours for the network map
+
+# Change intelligence: changes outside these windows are flagged as unplanned.
+changes:
+  windows: []
+  #  - "sat 22:00-sun 04:00"
+  #  - "weekdays 19:00-21:00"
+  # timezone: America/New_York
+
+# Golden-config rules checked on every backup.
+compliance: []
+#  - name: ssh-only
+#    description: VTY lines must only accept SSH
+#    platforms: [ios]
+#    must_not_match: '^\s*transport input .*telnet'
+#  - name: ntp
+#    platforms: [ios, nxos, eos]
+#    must_match: '^ntp server '
+#    severity: critical
+
+notifications: []
+#  - type: slack
+#    url: ${SLACK_WEBHOOK_URL}
+#    events: [config_changed, backup_failed, health_critical, health_recovered]
+#  - type: teams
+#    url: ${TEAMS_WEBHOOK_URL}
+#    min_severity: warning
+#  - type: email
+#    smtp_host: smtp.example.com
+#    smtp_username: netledger@example.com
+#    smtp_password: ${SMTP_PASSWORD}
+#    from_address: netledger@example.com
+#    to: [noc@example.com]
+#  - type: pagerduty
+#    routing_key: ${PAGERDUTY_ROUTING_KEY}
+#    events: [health_critical, health_recovered, backup_failed, backup_recovered]
+#  - type: webhook
+#    url: https://hooks.example.com/netledger
+#    secret: ${WEBHOOK_SECRET}            # adds an X-NetLedger-Signature header
+
+# Used by 'netledger serve' (Kubernetes, systemd, Windows service).
+schedule:
+  backup: "0 * * * *"           # cron, @hourly/@daily, or "every 30m"
+  health: "*/5 * * * *"
+  # timezone: America/New_York
+  run_on_start: true
+
+server:
+  enabled: true
+  host: 0.0.0.0
+  port: 8080
+  # username: admin             # basic auth for the dashboard and API
+  # password: ${NETLEDGER_UI_PASSWORD}
+  # api_token: ${NETLEDGER_API_TOKEN}       # Bearer token for POST /api/run/{backup,health}
+  metrics_auth: false
+  theme: light                  # light | dark | auto (users can toggle)
+
+logging:
+  level: INFO
+  format: auto                  # auto | text | json
+  # file: /var/log/netledger/netledger.log

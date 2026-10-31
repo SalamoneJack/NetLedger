@@ -1,0 +1,121 @@
+# NetLedger Helm values.
+#   helm install netledger deploy/helm/netledger -n netledger --create-namespace -f my-values.yaml
+
+image:
+  repository: ghcr.io/salamonejack/netledger
+  tag: ""                       # defaults to the chart appVersion
+  pullPolicy: IfNotPresent
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+# netledger.yaml - rendered as-is into a ConfigMap. Reference secrets as ${VARIABLE}.
+config:
+  inventory:
+    - inventory.yaml
+  credentials:
+    default:
+      username: ${NETLEDGER_USERNAME}
+      password: ${NETLEDGER_PASSWORD}
+      secret: ${NETLEDGER_ENABLE:-}
+  git:
+    backend: git
+    url: https://github.com/your-org/network-configs.git
+    branch: main
+    token: ${GIT_TOKEN}
+    author_name: NetLedger
+    author_email: netledger@example.com
+    path: "{site}/{name}"
+  schedule:
+    backup: "0 * * * *"
+    health: "*/5 * * * *"
+  server:
+    port: 8080
+  logging:
+    format: json
+
+# inventory.yaml - your devices (or use a NetBox source in config.inventory).
+inventory:
+  devices:
+    - name: core-sw01
+      host: 10.0.0.11
+      platform: ios
+      site: hq
+    - name: fw01
+      host: 10.0.0.1
+      platform: fortios
+      site: hq
+
+# Environment variables stored in a Secret created by the chart.
+# Leave empty and set existingSecret to manage the Secret yourself (recommended).
+secrets:
+  NETLEDGER_USERNAME: ""
+  NETLEDGER_PASSWORD: ""
+  NETLEDGER_ENABLE: ""
+  GIT_TOKEN: ""
+existingSecret: ""
+
+extraEnv: []
+extraVolumes: []
+extraVolumeMounts: []
+
+persistence:
+  enabled: true
+  existingClaim: ""
+  storageClass: ""
+  accessModes:
+    - ReadWriteOnce
+  size: 2Gi
+
+service:
+  type: ClusterIP
+  port: 8080
+  annotations: {}
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: netledger.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+serviceMonitor:
+  enabled: false
+  interval: 60s
+  labels: {}
+
+prometheusRule:
+  enabled: false
+  labels: {}
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: ["ALL"]
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    memory: 1Gi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

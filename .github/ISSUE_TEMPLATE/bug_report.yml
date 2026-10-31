@@ -1,0 +1,27 @@
+name: Bug report
+description: Something does not work as expected
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you run, what did you expect, what happened instead?
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: Device platform and OS version
+      placeholder: e.g. fortios / FortiGate-100F v7.2.8
+  - type: textarea
+    id: logs
+    attributes:
+      label: Output / logs
+      description: Run with `--log-level DEBUG`. Remove hostnames, IPs and secrets first.
+      render: shell
+  - type: input
+    id: version
+    attributes:
+      label: netledger version
+      description: Output of `netledger version`

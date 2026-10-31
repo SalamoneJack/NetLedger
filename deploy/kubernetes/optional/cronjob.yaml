@@ -1,0 +1,71 @@
+# Alternative to the Deployment: run backup + health as a CronJob (no dashboard).
+# Remove deployment.yaml/service.yaml from kustomization.yaml when using this.
+# Keeping the PVC preserves alert de-duplication between runs.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: netledger
+  labels:
+    app.kubernetes.io/name: netledger
+spec:
+  schedule: "0 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      activeDeadlineSeconds: 3300
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: netledger
+        spec:
+          restartPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 10001
+            runAsGroup: 10001
+            fsGroup: 10001
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: netledger
+              image: ghcr.io/salamonejack/netledger:1.0.0
+              args: ["run"]
+              env:
+                - name: NETLEDGER_CONFIG
+                  value: /etc/netledger/netledger.yaml
+                - name: NETLEDGER_DATA_DIR
+                  value: /data
+              envFrom:
+                - secretRef:
+                    name: netledger-secrets
+              volumeMounts:
+                - name: config
+                  mountPath: /etc/netledger
+                  readOnly: true
+                - name: data
+                  mountPath: /data
+                - name: tmp
+                  mountPath: /tmp
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 256Mi
+                limits:
+                  memory: 1Gi
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: ["ALL"]
+          volumes:
+            - name: config
+              configMap:
+                name: netledger-config
+            - name: data
+              persistentVolumeClaim:
+                claimName: netledger-data
+            - name: tmp
+              emptyDir: {}

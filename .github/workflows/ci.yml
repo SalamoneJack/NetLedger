@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install ruff
+      - run: ruff check src tests scripts
+
+  test:
+    name: test (${{ matrix.os }}, py${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.9", "3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+      - run: python -m pip install -e ".[dev]"
+      - run: python -m pytest --cov=netledger --cov-report=term-missing:skip-covered
+      - name: Demo smoke test
+        run: netledger demo --dir ${{ runner.temp }}/demo --no-serve
+
+  container:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: netledger:ci
+      - name: Smoke test image
+        run: |
+          docker run --rm netledger:ci version
+          docker run --rm --read-only --tmpfs /tmp netledger:ci demo --dir /tmp/demo --no-serve
+
+  manifests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+      - name: Helm lint and render
+        run: |
+          helm lint deploy/helm/netledger
+          helm template netledger deploy/helm/netledger --set ingress.enabled=true \
+            --set serviceMonitor.enabled=true --set prometheusRule.enabled=true > helm.yaml
+      - name: Kustomize render
+        run: |
+          cp deploy/kubernetes/secret.env.example deploy/kubernetes/secret.env
+          kubectl kustomize deploy/kubernetes > kustomize.yaml
+      - name: Validate schemas
+        run: |
+          docker run --rm -v "$PWD:/w" ghcr.io/yannh/kubeconform:latest -strict -summary \
+            -ignore-missing-schemas /w/helm.yaml /w/kustomize.yaml
+      - name: ShellCheck
+        run: shellcheck deploy/linux/install.sh

@@ -1,0 +1,43 @@
+# NetLedger configuration for Kubernetes. Secrets come from the netledger-secrets Secret
+# (environment variables) - see ../secret.env.example. Full reference: docs/configuration.md
+inventory:
+  - inventory.yaml
+
+credentials:
+  default:
+    username: ${NETLEDGER_USERNAME}
+    password: ${NETLEDGER_PASSWORD}
+    secret: ${NETLEDGER_ENABLE:-}
+
+git:
+  backend: git
+  url: https://github.com/your-org/network-configs.git
+  branch: main
+  token: ${GIT_TOKEN}
+  author_name: NetLedger
+  author_email: netledger@example.com
+  path: "{site}/{name}"
+
+backup:
+  workers: 10
+  retrieve: [running]
+
+health:
+  thresholds:
+    cpu: {warning: 80, critical: 95}
+    memory: {warning: 85, critical: 95}
+
+notifications:
+  - type: slack
+    url: ${SLACK_WEBHOOK_URL:-https://hooks.slack.com/services/disabled}
+    events: [config_changed, backup_failed, health_critical, health_recovered]
+
+schedule:
+  backup: "0 * * * *"
+  health: "*/5 * * * *"
+
+server:
+  port: 8080
+
+logging:
+  format: json

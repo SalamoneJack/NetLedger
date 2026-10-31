@@ -1,0 +1,24 @@
+# Alternative to the always-on service: run backup + health from a timer.
+#   sudo cp netledger-oneshot.service netledger-oneshot.timer /etc/systemd/system/
+#   sudo systemctl disable --now netledger.service    # if installed
+#   sudo systemctl enable --now netledger-oneshot.timer
+[Unit]
+Description=NetLedger backup and health check (one shot)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=netledger
+Group=netledger
+EnvironmentFile=-/etc/netledger/netledger.env
+Environment=NETLEDGER_CONFIG=/etc/netledger/netledger.yaml
+Environment=NETLEDGER_DATA_DIR=/var/lib/netledger
+Environment=HOME=/var/lib/netledger
+ExecStart=/opt/netledger/bin/netledger run
+SuccessExitStatus=1
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/lib/netledger
+PrivateTmp=yes

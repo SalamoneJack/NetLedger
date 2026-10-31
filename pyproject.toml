@@ -1,0 +1,76 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "netledger"
+version = "1.0.0"
+description = "Multi-vendor network configuration backup, change tracking and health monitoring. Collects configs with NAPALM and commits them straight to Git."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Jack Salamone" }]
+requires-python = ">=3.9"
+keywords = [
+    "network", "napalm", "netmiko", "backup", "configuration-management", "git",
+    "cisco", "fortinet", "fortigate", "juniper", "arista", "palo-alto", "monitoring", "netdevops",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Environment :: Web Environment",
+    "Intended Audience :: System Administrators",
+    "Intended Audience :: Telecommunications Industry",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: MacOS",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: System :: Networking",
+    "Topic :: System :: Networking :: Monitoring",
+    "Topic :: System :: Archiving :: Backup",
+]
+dependencies = [
+    "napalm>=4.1",
+    "netmiko>=4.1",
+    "pydantic>=2.5,<3",
+    "PyYAML>=6.0",
+    "requests>=2.28",
+    "rich>=13.0",
+    "tzdata; sys_platform == 'win32'",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.4", "pytest-cov>=4.1", "ruff>=0.4"]
+
+[project.scripts]
+netledger = "netledger.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/SalamoneJack/NetLedger"
+Documentation = "https://github.com/SalamoneJack/NetLedger/tree/main/docs"
+Issues = "https://github.com/SalamoneJack/NetLedger/issues"
+Changelog = "https://github.com/SalamoneJack/NetLedger/blob/main/CHANGELOG.md"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+netledger = ["templates/*", "py.typed", "web/static/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.ruff]
+line-length = 110
+target-version = "py39"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM"]
+ignore = ["E501", "B008", "SIM105", "UP006", "UP007", "UP031", "UP035", "UP045"]
