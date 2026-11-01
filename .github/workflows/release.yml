@@ -59,7 +59,7 @@ jobs:
         run: |
           version="${GITHUB_REF_NAME#v}"
           awk -v v="$version" 'index($0, "## [" v "]") == 1 {found=1; next} found && /^## \[/ {exit} found {print}' CHANGELOG.md > release-notes.md
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           files: dist/*
           body_path: release-notes.md
