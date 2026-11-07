@@ -310,7 +310,9 @@ class BackupRunner:
         progress: Callable[[DeviceResult], None] | None,
     ) -> BackupReport:
         inventory = list(inventory) if inventory is not None else list(devices)
-        full_run = {d.name for d in devices} >= {d.name for d in inventory if d.backup}
+        # pruning needs a run over every device NetLedger backs up itself; Oxidized devices have their own job in
+        # 'serve', and pruning keeps the folders of everything still in the inventory either way
+        full_run = {d.name for d in devices} >= {d.name for d in inventory if d.backup and d.collector != "oxidized"}
         report = BackupReport(started=now(), dry_run=dry_run)
         self._meta_cache = {}
         self._commits = 0

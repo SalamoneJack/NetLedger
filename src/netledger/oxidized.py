@@ -309,14 +309,25 @@ def _api_nodes(source: InventorySource, session: Any = None) -> List[Node]:
     return nodes
 
 
+_NODES: Dict[Tuple[str, str], List[Node]] = {}  # (config folder, source key) -> nodes of the last successful read
+
+
 def load_oxidized_inventory(source: InventorySource, settings: Settings) -> List[Any]:
-    """Devices for every Oxidized node: configurations come from Oxidized, health is off unless enabled."""
+    """Devices for every Oxidized node: configurations come from Oxidized, health is off unless enabled.
+
+    When Oxidized cannot be read but was read before in this process, its last known nodes are used, so an
+    oxidized-web outage neither stops NetLedger's other backups nor makes those devices look removed.
+    """
     from netledger.inventory import build_device
 
     try:
         nodes = _repo_nodes(source, settings) if source.mode == "repo" else _api_nodes(source)
+        _NODES[(str(settings.base_dir), source.key)] = nodes
     except OxidizedError as exc:
-        raise ConfigError(str(exc)) from exc
+        if (str(settings.base_dir), source.key) not in _NODES:
+            raise ConfigError(str(exc)) from exc
+        log.warning("%s; using the nodes it had before", exc)
+        nodes = _NODES[(str(settings.base_dir), source.key)]
     devices = []
     seen: set[str] = set()
     for node in nodes:
@@ -335,6 +346,7 @@ def load_oxidized_inventory(source: InventorySource, settings: Settings) -> List
         raw.pop("enabled", None)
         device = build_device(raw, f"oxidized:{name}")
         device.source = source.key
+        device.risk_origin = name if "multiplier" in (override.get("risk") or {}) else "defaults" if "multiplier" in (source.defaults.get("risk") or {}) else ""
         device.collector = "oxidized"
         device.oxidized = {
             "source": source.key, "node": node.name, "group": node.group, "full_name": node.full_name,

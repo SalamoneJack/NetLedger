@@ -225,6 +225,55 @@ def test_source_validation(tmp_path: Path) -> None:
         load_inventory(settings)
 
 
+@needs_git
+def test_risk_settings_and_outages(tmp_path: Path) -> None:
+    import shutil
+
+    from netledger.oxidized import _NODES
+
+    repo = new_repo(tmp_path / "oxidized" / "configs.git")
+    commit(repo, {"core1": IOS_V1, "sw2": IOS_V1})
+    settings = configure(tmp_path, {
+        "path": "oxidized/configs.git",
+        "defaults": {"risk": {"multiplier": 0.5}},
+        "devices": {"core1": {"risk": {"multiplier": 1.5}}},
+    })
+    devices = {d.name: d for d in load_inventory(settings)}
+    assert settings.risk.resolve(devices["core1"].risk, devices["core1"].risk_origin).origin == "core1"
+    assert settings.risk.resolve(devices["sw2"].risk, devices["sw2"].risk_origin).origin == "defaults"
+
+    shutil.rmtree(tmp_path / "oxidized", ignore_errors=True)
+    if (tmp_path / "oxidized").exists():  # Windows keeps read-only git objects: move the repository aside instead
+        (tmp_path / "oxidized").rename(tmp_path / "gone")
+    assert sorted(d.name for d in load_inventory(settings)) == ["core1", "sw2"]  # an outage keeps the known devices
+    _NODES.clear()
+    with pytest.raises(ConfigError, match="does not exist"):  # but nothing to fall back on fails loudly
+        load_inventory(settings)
+
+
+@needs_git
+def test_serve_backup_job_still_prunes_with_an_oxidized_source(tmp_path: Path) -> None:
+    from .conftest import simulated
+
+    commit(new_repo(tmp_path / "oxidized" / "configs.git"), {"core1": IOS_V1})
+    inventory = tmp_path / "inventory.yaml"
+    inventory.write_text(yaml.safe_dump({"devices": [simulated("keep1", "ios"), simulated("gone1", "eos")]}), encoding="utf-8")
+    config = {
+        "inventory": ["inventory.yaml", {"type": "oxidized", "path": "oxidized/configs.git"}],
+        "git": {"backend": "local", "prune": True},
+        "credentials": {"default": {"username": "u", "password": "p"}},
+    }
+    (tmp_path / "netledger.yaml").write_text(yaml.safe_dump(config), encoding="utf-8")
+    settings = load_settings(tmp_path / "netledger.yaml")
+    state = StateStore(settings.data_path / "state.json")
+    run(settings, state)  # everything, as 'netledger backup' does
+    inventory.write_text(yaml.safe_dump({"devices": [simulated("keep1", "ios")]}), encoding="utf-8")
+    devices = load_inventory(settings)
+    BackupRunner(settings, state).run([d for d in devices if d.collector != "oxidized"], inventory=devices)  # as 'serve' does
+    repo = settings.data_path / "repo" / "configs"
+    assert not (repo / "gone1").exists() and (repo / "keep1").exists() and (repo / "core1").exists()
+
+
 def test_queued_trigger_runs_once_more() -> None:
     scheduler = Scheduler()
     started, release, runs = threading.Event(), threading.Event(), []
