@@ -29,6 +29,18 @@ All notable changes to this project are documented here. The format follows
   for example a lab group at multiplier 0.5 and the edge firewalls at 1.5. When a setting changes the
   outcome it is listed among the reasons (`Device multiplier 1.5 (edge)`). Without a `risk` block, scoring
   is unchanged.
+- `netledger sanitize [FILE|-] [--platform P] [-o OUT] [--keep-private] [--device NAME]` makes a
+  configuration or command output safe to share in a bug report. It applies the platform's secret rules,
+  then replaces:
+  - IPv4 and IPv6 addresses, consistently and prefix-preserving, so subnets keep their hosts (masks,
+    wildcards and prefix lengths are kept);
+  - host, domain and user names, SNMP communities, descriptions and comments, MAC addresses (the vendor
+    prefix is kept) and serial numbers;
+  - AS numbers (to 64512 and up), banners, certificates and keys.
+
+  Lines and indentation never change, so the output parses like the original. `--device` sanitizes the
+  latest backup of an inventory device.
+- A "Parser or change-analysis bug" issue template that asks for `netledger sanitize` output.
 
 ## [1.0.0] - 2026-10-31
 

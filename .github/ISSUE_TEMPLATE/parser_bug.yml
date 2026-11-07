@@ -1,0 +1,52 @@
+name: Parser or change-analysis bug
+description: NetLedger reads a configuration or command output wrongly (sections, summary, risk, reason, health values)
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Real output is the fastest way to a fix. Please run it through `netledger sanitize` first, which
+        replaces secrets, addresses, names, serial numbers and AS numbers but keeps what the parser needs:
+
+        ```
+        netledger sanitize running-config.txt -o sanitized.txt
+        netledger sanitize --device NAME -o sanitized.txt      # the latest backup of a device
+        ```
+
+        Read the result before you paste it.
+  - type: input
+    id: platform
+    attributes:
+      label: Platform, model and OS version
+      placeholder: e.g. ios / C9300-48P 17.9.4a
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What is wrong?
+      description: What NetLedger showed (sections, summary, risk, reason, CPU or memory, ...) and what you expected.
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Sanitized output
+      description: |
+        The `netledger sanitize` output of the configuration or command that is read wrongly. For a change that
+        is summarized or scored wrongly, include the configuration before and after the change.
+      render: text
+    validations:
+      required: true
+  - type: checkboxes
+    id: checked
+    attributes:
+      label: Before you submit
+      options:
+        - label: I ran the output through `netledger sanitize` and read the result through.
+          required: true
+  - type: input
+    id: version
+    attributes:
+      label: netledger version
+      description: Output of `netledger version`

@@ -444,6 +444,7 @@ about those.
 | `netledger serve` | Scheduler + web console + API + `/metrics` |
 | `netledger search PATTERN` | Search every backed-up configuration: a regex, or an IP / subnet for "where is" (`--ip`, `-i`, `-l`) |
 | `netledger notify-test` | Send a test message to every notifier |
+| `netledger sanitize [FILE]` | Make a configuration or command output safe to share: secrets, addresses, names and serials replaced, structure kept (`--device NAME` for the latest backup) |
 | `netledger demo` | Simulated network, local repository and dashboard |
 
 Filters work on every device command and combine freely: `-d 'core-*' -s hq -g firewalls -t critical -p fortios`.
@@ -471,7 +472,8 @@ backup repository private or enable masking. More in [SECURITY.md](SECURITY.md).
 ## Contributing
 
 Issues and pull requests are welcome, and sanitized command output from real devices is the most
-valuable contribution for improving parsers. See [CONTRIBUTING.md](CONTRIBUTING.md).
+valuable contribution for improving parsers. `netledger sanitize` makes any configuration or command output
+safe to share. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
