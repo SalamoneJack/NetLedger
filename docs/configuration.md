@@ -29,7 +29,7 @@ Any string value can reference the environment or a file:
 | Key | Default | Description |
 |---|---|---|
 | `data_dir` | `./data` next to the config | State file, health history (`history.db`) and the local Git working copy. `$NETLEDGER_DATA_DIR` overrides it. |
-| `inventory` | `[inventory.yaml]` | Inventory sources: file paths, directories, globs or NetBox sources. See [inventory.md](inventory.md). |
+| `inventory` | `[inventory.yaml]` | Inventory sources: file paths, directories, globs, NetBox or Oxidized sources. See [inventory.md](inventory.md) and [oxidized.md](oxidized.md). |
 | `credentials` | `{}` | Named credential sets (below). |
 | `git` | local repository | Where configurations are committed. |
 | `backup` | | Backup behaviour. |

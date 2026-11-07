@@ -174,6 +174,7 @@ Everything the console shows is available as JSON (same authentication as the co
 | `GET /api/topology` | Nodes and links |
 | `GET /api/live?cursor=` | Revision, job progress and new events, for polling |
 | `POST /api/run/backup`, `/api/run/health` | Start a job (`Authorization: Bearer <api_token>`) |
+| `POST /api/hooks/oxidized` | Process new Oxidized configurations now (an Oxidized source's `hook_token` or `hook_secret`; see [oxidized.md](oxidized.md#react-to-changes-immediately)) |
 
 ## Security
 

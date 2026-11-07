@@ -175,6 +175,7 @@ class Job:
     last_started: float | None = None
     last_finished: float | None = None
     last_error: str | None = None
+    again: bool = False  # triggered while running: run once more when this run finishes
 
 
 class Scheduler:
@@ -190,13 +191,15 @@ class Scheduler:
         start = time.time()
         self.jobs[name] = Job(name, schedule, func, next_run=start if run_now else schedule.next_after(start))
 
-    def trigger(self, name: str) -> bool:
-        """Start a job immediately. Returns False if it is already running."""
+    def trigger(self, name: str, queue: bool = False) -> bool:
+        """Start a job immediately. Returns False if it is already running; with ``queue`` it then runs
+        once more as soon as the current run finishes (several triggers still mean one more run)."""
         job = self.jobs.get(name)
         if job is None:
             raise KeyError(name)
         with self._lock:
             if job.running:
+                job.again = job.again or queue
                 return False
             self._start(job)
             return True
@@ -207,15 +210,23 @@ class Scheduler:
         threading.Thread(target=self._run, args=(job,), name=f"job-{job.name}", daemon=True).start()
 
     def _run(self, job: Job) -> None:
-        try:
-            job.func()
-            job.last_error = None
-        except Exception as exc:  # noqa: BLE001
-            job.last_error = str(exc)
-            log.exception("job %s failed", job.name)
-        finally:
-            job.last_finished = time.time()
-            job.running = False
+        again = True
+        while again:
+            try:
+                job.func()
+                job.last_error = None
+            except Exception as exc:  # noqa: BLE001
+                job.last_error = str(exc)
+                log.exception("job %s failed", job.name)
+            finally:
+                job.last_finished = time.time()
+                with self._lock:
+                    again = job.again and not self._stop.is_set()
+                    job.again = False
+                    if again:
+                        job.last_started = time.time()
+                    else:
+                        job.running = False
 
     def run_forever(self) -> None:
         while not self._stop.is_set():

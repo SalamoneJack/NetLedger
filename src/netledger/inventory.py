@@ -65,6 +65,8 @@ class Device:
     risk: RiskSettings | None = None  # scoring overrides from the device and its groups
     risk_origin: str = ""  # the group (or device) that set the risk multiplier
     source: str = ""
+    collector: str = ""  # "oxidized": configurations come from Oxidized, NetLedger does not log in to back up
+    oxidized: dict[str, Any] = field(default_factory=dict)  # the Oxidized node behind the device
 
     @property
     def platform_info(self) -> Platform:
@@ -109,6 +111,8 @@ class Device:
         if self.risk is not None:
             data["risk"] = self.risk.model_dump(exclude_unset=True)
             data["risk_origin"] = self.risk_origin
+        if self.collector:
+            data["collector"] = self.collector
         return data
 
 
@@ -464,6 +468,10 @@ def load_inventory(settings: Settings) -> list[Device]:
             loaded: list[Device] = []
             for path in _expand_paths(settings.resolve_path(source.path or "")):
                 loaded.extend(load_file(path, source.defaults))
+        elif source.type == "oxidized":
+            from netledger.oxidized import load_oxidized_inventory
+
+            loaded = load_oxidized_inventory(source, settings)
         else:
             loaded = load_netbox_inventory(source)
         for device in loaded:
@@ -505,6 +513,8 @@ def validate_inventory(devices: list[Device], settings: Settings) -> list[str]:
     problems: list[str] = []
     checked_drivers: dict[str, str | None] = {}
     for device in devices:
+        if device.collector == "oxidized" and not device.health:
+            continue  # Oxidized collects its configuration; NetLedger never logs in to it
         try:
             resolve_credentials(device, settings)
         except ConfigError as exc:

@@ -331,6 +331,7 @@ def cmd_serve(args: argparse.Namespace) -> int:
     from netledger.health import HealthRunner
     from netledger.history import MetricsHistory
     from netledger.notify import Dispatcher
+    from netledger.oxidized import oxidized_sources
     from netledger.scheduler import Scheduler, load_timezone, parse_schedule
     from netledger.server import App, DashboardServer, JobTracker
 
@@ -341,26 +342,44 @@ def cmd_serve(args: argparse.Namespace) -> int:
     scheduler = Scheduler()
     history = MetricsHistory.for_settings(settings)
     tracker = JobTracker()
+    oxidized = oxidized_sources(settings)
 
     def backup_job(progress: Callable[[Any], None]) -> None:
         devices = load_inventory(settings)
-        report = BackupRunner(settings, state, dispatcher).run(devices, inventory=devices, progress=progress)
+        targets = [d for d in devices if d.collector != "oxidized"] if oxidized else devices  # those have their own job
+        report = BackupRunner(settings, state, dispatcher).run(targets, inventory=devices, progress=progress)
         log.info(
             "backup run finished: %d ok, %d failed, %d changed, %d commit(s)%s",
             len(report.ok), len(report.failed), len([r for r in report.results if r.config_changed]), report.commits,
             f"; repository error: {report.error}" if report.error else f"; {report.publish_message}",
         )
 
+    def oxidized_job(progress: Callable[[Any], None]) -> None:
+        devices = load_inventory(settings)
+        report = BackupRunner(settings, state, dispatcher).run([d for d in devices if d.collector == "oxidized"], inventory=devices, progress=progress)
+        changed = len([r for r in report.results if r.config_changed])
+        if changed or report.failed or report.error:
+            log.info("Oxidized: %d device(s) changed, %d failed%s", changed, len(report.failed), f"; repository error: {report.error}" if report.error else "")
+
     def health_job(progress: Callable[[Any], None]) -> None:
         report = HealthRunner(settings, state, dispatcher, history=history).run(load_inventory(settings), progress=progress)
         log.info("health run finished: %d ok, %d warning, %d critical, %d unknown",
                  report.count("ok"), report.count("warning"), report.count("critical"), report.count("unknown"))
 
-    def count(kind: str) -> Callable[[], int]:
-        return lambda: sum(1 for d in load_inventory(settings) if getattr(d, kind))
+    def count(kind: str, from_oxidized: bool | None = None) -> Callable[[], int]:
+        def total() -> int:
+            devices = [d for d in load_inventory(settings) if getattr(d, kind)]
+            if from_oxidized is not None:
+                devices = [d for d in devices if (d.collector == "oxidized") == from_oxidized]
+            return len(devices)
+
+        return total
 
     if settings.backup.enabled and settings.schedule.backup:
-        scheduler.add("backup", parse_schedule(settings.schedule.backup, tz), tracker.wrap("backup", backup_job, count("backup")),
+        scheduler.add("backup", parse_schedule(settings.schedule.backup, tz),
+                      tracker.wrap("backup", backup_job, count("backup", False if oxidized else None)), run_now=settings.schedule.run_on_start)
+    if settings.backup.enabled and oxidized:  # also started by POST /api/hooks/oxidized
+        scheduler.add("oxidized", parse_schedule(oxidized[0].poll, tz), tracker.wrap("oxidized", oxidized_job, count("backup", True)),
                       run_now=settings.schedule.run_on_start)
     if settings.health.enabled and settings.schedule.health:
         scheduler.add("health", parse_schedule(settings.schedule.health, tz), tracker.wrap("health", health_job, count("health")),

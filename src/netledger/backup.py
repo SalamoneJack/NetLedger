@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import threading
 import time
 from dataclasses import dataclass, field
 from typing import Any, Callable
@@ -27,6 +28,14 @@ log = logging.getLogger(__name__)
 CONFIG_KINDS = ("running", "startup", "candidate")
 INDEX_MARKER = "<!-- netledger:index -->"
 PROJECT_URL = "https://github.com/SalamoneJack/NetLedger"
+
+_LOCKS: dict[str, threading.Lock] = {}
+_LOCKS_GUARD = threading.Lock()
+
+
+def _repository_lock(key: str) -> threading.Lock:
+    with _LOCKS_GUARD:
+        return _LOCKS.setdefault(key, threading.Lock())
 
 
 @dataclass
@@ -224,6 +233,8 @@ class BackupRunner:
     # ------------------------------------------------------------------ collection (worker threads)
 
     def retrieve_kinds(self, device: Device) -> list[str]:
+        if device.collector == "oxidized":
+            return ["running"]
         platform = device.platform_info
         wanted = device.retrieve or list(self.settings.backup.retrieve)
         kinds = [
@@ -233,6 +244,8 @@ class BackupRunner:
         return kinds or ["running"]
 
     def commands_for(self, device: Device) -> list[CommandSpec]:
+        if device.collector == "oxidized":
+            return []
         entries: list[Any] = []
         for key, commands in self.settings.backup.commands.items():
             if key == "*" or (resolve_platform(key) or key) == device.platform:
@@ -283,12 +296,24 @@ class BackupRunner:
         push: bool = True,
         progress: Callable[[DeviceResult], None] | None = None,
     ) -> BackupReport:
+        store = self.store_factory(self.settings)
+        with _repository_lock(store.describe()):  # one writer per repository (scheduled backups, Oxidized processing)
+            return self._run(store, devices, inventory, dry_run, push, progress)
+
+    def _run(
+        self,
+        store: Store,
+        devices: list[Device],
+        inventory: list[Device] | None,
+        dry_run: bool,
+        push: bool,
+        progress: Callable[[DeviceResult], None] | None,
+    ) -> BackupReport:
         inventory = list(inventory) if inventory is not None else list(devices)
         full_run = {d.name for d in devices} >= {d.name for d in inventory if d.backup}
         report = BackupReport(started=now(), dry_run=dry_run)
         self._meta_cache = {}
         self._commits = 0
-        store = self.store_factory(self.settings)
         self.links = store.links
         report.store = store.describe()
         try:
@@ -302,13 +327,19 @@ class BackupRunner:
         events: list[Event] = []
         pending: dict[str, str | None] = {}
         pending_lines: list[str] = []
-        targets = [d for d in devices if d.backup]
+        targets = [d for d in devices if d.backup and d.collector != "oxidized"]
         backed_up = [d for d in inventory if d.backup]
         for device, collected in run_parallel(targets, self.collect, self.settings.backup.workers):
             result = self._process(device, collected, store, backed_up, dry_run, events, pending, pending_lines)
             report.results.append(result)
             if progress:
                 progress(result)
+        from_oxidized = [d for d in devices if d.backup and d.collector == "oxidized"]
+        if from_oxidized:
+            for result in self._run_oxidized(from_oxidized, store, backed_up, dry_run, events, pending, pending_lines):
+                report.results.append(result)
+                if progress:
+                    progress(result)
         report.results.sort(key=lambda r: r.device.name.lower())
 
         if not dry_run:
@@ -332,6 +363,70 @@ class BackupRunner:
             if self.dispatcher and events:
                 self.dispatcher.dispatch(events)
         return report
+
+    def _run_oxidized(
+        self,
+        devices: list[Device],
+        store: Store,
+        inventory: list[Device],
+        dry_run: bool,
+        events: list[Event],
+        pending: dict[str, str | None],
+        pending_lines: list[str],
+    ) -> list[DeviceResult]:
+        """Process what Oxidized collected since the last run: every new version is a change of its own."""
+        from netledger.oxidized import OxidizedError, oxidized_sources, read_versions
+
+        by_name = {d.name: d for d in devices}
+        results: list[DeviceResult] = []
+        for source in oxidized_sources(self.settings):
+            mine = [d for d in devices if d.oxidized.get("source") == source.key]
+            if not mine:
+                continue
+            try:
+                batch = read_versions(source, self.settings, mine, self.state.cursor(source.key))
+            except OxidizedError as exc:
+                log.error("%s", exc)
+                for device in mine:
+                    result = DeviceResult(device=device, status="ok")
+                    results.append(self._fail(device, result, f"cannot read Oxidized: {exc}", self.state.section(device.name, "backup"), events, dry_run))
+                continue
+            versions = batch.versions
+            if self.settings.git.commit_mode == "per-run":  # one commit per run: keep the newest version of each device
+                newest = {version.device: version for version in versions}
+                versions = [version for version in versions if newest[version.device] is version]
+            done: dict[str, DeviceResult] = {}
+            for version in versions:
+                done[version.device] = self._process(
+                    by_name[version.device], Collected(configs={"running": version.text}), store, inventory, dry_run, events,
+                    pending, pending_lines, when=version.timestamp, author=version.author, quiet=version.quiet,
+                )
+            failures = dict(batch.failures)
+            for device in mine:
+                previous = self.state.section(device.name, "backup")
+                if device.name in failures:
+                    results.append(self._fail(device, DeviceResult(device=device, status="ok"), failures[device.name], previous, events, dry_run))
+                elif device.name in done:
+                    results.append(done[device.name])
+                else:
+                    results.append(self._unchanged(device, previous, events, dry_run))
+            if not dry_run:
+                self.state.set_cursor(source.key, batch.cursor)
+        return results
+
+    def _unchanged(self, device: Device, previous: dict[str, Any], events: list[Event], dry_run: bool) -> DeviceResult:
+        """Nothing new from Oxidized for a device: still a successful check."""
+        result = DeviceResult(device=device, status="ok")
+        if dry_run:
+            return result
+        stamp = now()
+        if previous.get("status") == "failed" and int(previous.get("consecutive_failures") or 0) >= self.settings.backup.failure_alert_after:
+            events.append(Event(
+                "backup_recovered", "info", f"{device.name}: configuration backup recovered", "Backups are succeeding again.",
+                device=device.name, site=device.site or None, platform=device.platform, timestamp=stamp,
+            ))
+        self.state.update(device.name, "backup", {"status": "ok", "error": None, "last_attempt": stamp, "consecutive_failures": 0})
+        return result
 
     def _finish(
         self,
@@ -382,7 +477,7 @@ class BackupRunner:
                 self._meta_cache[device.name] = {}
         return self._meta_cache[device.name]
 
-    def _build_meta(self, device: Device, facts: dict[str, Any], old: dict[str, Any], changed: bool) -> dict[str, Any]:
+    def _build_meta(self, device: Device, facts: dict[str, Any], old: dict[str, Any], changed: bool, stamp: float | None = None) -> dict[str, Any]:
         platform = device.platform_info
 
         def pick(key: str) -> Any:
@@ -404,7 +499,7 @@ class BackupRunner:
             "site": device.site,
             "role": device.role,
             "tags": sorted(device.tags),
-            "last_changed": iso(now()) if changed or not old.get("last_changed") else old["last_changed"],
+            "last_changed": iso(stamp or now()) if changed or not old.get("last_changed") else old["last_changed"],
         }
         if device.description:
             meta["description"] = device.description
@@ -420,7 +515,13 @@ class BackupRunner:
         events: list[Event],
         pending: dict[str, str | None],
         pending_lines: list[str],
+        when: float | None = None,
+        author: str | None = None,
+        quiet: bool = False,
     ) -> DeviceResult:
+        """``when`` / ``author``: when and by whom the configuration was captured, if not now by NetLedger
+        (an Oxidized commit). ``quiet``: record the configuration without reporting it as a change."""
+        stamp = when if when is not None else now()
         platform = device.platform_info
         ddir = device_dir(device, self.settings.git)
         result = DeviceResult(device=device, status="ok", duration=collected.duration, warnings=list(collected.warnings), facts=collected.facts)
@@ -442,6 +543,10 @@ class BackupRunner:
             normalized = self.normalizer.normalize(raw, platform)
             if kind == "running":
                 result.meta = normalized.meta
+                if author and not result.meta.get("changed_by"):
+                    result.meta["changed_by"] = author
+                if when is not None and result.meta.get("changed_by") and not result.meta.get("changed_at"):
+                    result.meta["changed_at"] = iso(when)
                 compliance_text = normalized.text if self.normalizer.mode == "keep" else self.normalizer.normalize(raw, platform, secrets="keep").text
             files[f"{ddir}/{kind}-config.{platform.extension}"] = (kind, normalized.text)
         command_paths = {}
@@ -480,7 +585,7 @@ class BackupRunner:
                 changes.append(self._change(path, "stale", store.read(path), None))
 
         old_meta = self._load_meta(store, device)
-        meta = self._build_meta(device, collected.facts, old_meta, any(c.kind in CONFIG_KINDS for c in changes))
+        meta = self._build_meta(device, collected.facts, old_meta, any(c.kind in CONFIG_KINDS for c in changes), stamp)
         meta_text = json.dumps(meta, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
         old_meta_text = store.read(meta_path)
         if old_meta_text != meta_text:
@@ -506,9 +611,8 @@ class BackupRunner:
             except Exception as exc:  # noqa: BLE001 - analysis is advisory; never fail a backup over it
                 log.warning("%s: change analysis failed: %s", device.name, exc)
             if not result.initial and self.calendar.enabled:
-                stamp = now()
                 since = float(previous.get("last_success") or stamp)
-                result.unplanned = not self.calendar.overlaps(since, stamp)
+                result.unplanned = not self.calendar.overlaps(min(since, stamp), stamp)
 
         if changes and not dry_run:
             commit_changes: dict[str, str | None] = {c.path: c.new for c in changes}
@@ -528,7 +632,7 @@ class BackupRunner:
         if not dry_run:
             if store.local_path is None and running_path in files:
                 self._mirror(running_path, files[running_path][1])
-            self._record_success(device, result, previous, events, ddir)
+            self._record_success(device, result, previous, events, ddir, stamp, quiet)
         return result
 
     def _mirror(self, path: str, text: str) -> None:
@@ -580,13 +684,20 @@ class BackupRunner:
             self.state.update(device.name, "facts", clean)
 
     def _record_success(
-        self, device: Device, result: DeviceResult, previous: dict[str, Any], events: list[Event], ddir: str
+        self,
+        device: Device,
+        result: DeviceResult,
+        previous: dict[str, Any],
+        events: list[Event],
+        ddir: str,
+        stamp: float | None = None,
+        quiet: bool = False,
     ) -> None:
-        stamp = now()
+        stamp = stamp if stamp is not None else now()
         values: dict[str, Any] = {
             "status": "ok",
             "error": None,
-            "last_attempt": stamp,
+            "last_attempt": max(stamp, float(previous.get("last_attempt") or 0)),
             "last_success": stamp,
             "consecutive_failures": 0,
             "duration": round(result.duration, 2),
@@ -603,7 +714,7 @@ class BackupRunner:
             values["last_unplanned"] = result.unplanned
             if result.initial:
                 values["first_backup"] = stamp
-            else:
+            elif not quiet:
                 self._record_change(device, result, previous, events, ddir, stamp)
         if previous.get("status") == "failed" and int(previous.get("consecutive_failures") or 0) >= self.settings.backup.failure_alert_after:
             events.append(Event(

@@ -63,7 +63,7 @@ class CredentialSet(_Model):
 
 
 class InventorySource(_Model):
-    type: Literal["file", "netbox"] = "file"
+    type: Literal["file", "netbox", "oxidized"] = "file"
     path: Optional[str] = None
     # NetBox
     url: Optional[str] = None
@@ -76,6 +76,18 @@ class InventorySource(_Model):
     timeout: int = 30
     defaults: Dict[str, Any] = Field(default_factory=dict)
     site_field: Literal["slug", "name"] = "slug"
+    # Oxidized: configurations come from Oxidized instead of NetLedger logging in
+    mode: Literal["repo", "api"] = Field(default="repo", description="repo: read Oxidized's git output; api: poll oxidized-web")
+    username: Optional[str] = Field(default=None, description="Basic auth for the Oxidized API (usually a reverse proxy)")
+    password: Optional[str] = None
+    router_db: Optional[str] = Field(default=None, description="Oxidized's router.db (name:model[:group]), for each node's platform")
+    router_db_delimiter: str = ":"
+    groups: List[str] = Field(default_factory=list, description="Only nodes in these Oxidized groups (default: all)")
+    devices: Dict[str, Dict[str, Any]] = Field(default_factory=dict, description="Per-node settings: platform, host, site, health, ...")
+    poll: str = Field(default="every 5m", description="How often 'netledger serve' looks for new configurations")
+    hook_token: Optional[str] = Field(default=None, description="Bearer token accepted on POST /api/hooks/oxidized")
+    hook_secret: Optional[str] = Field(default=None, description="HMAC-SHA256 secret accepted on POST /api/hooks/oxidized")
+    use_commit_author: bool = Field(default=True, description="Use the Oxidized commit author as 'changed by' when the config does not say")
 
     @model_validator(mode="after")
     def _check(self) -> InventorySource:
@@ -83,7 +95,23 @@ class InventorySource(_Model):
             raise ValueError("inventory source of type 'file' needs a 'path'")
         if self.type == "netbox" and not self.url:
             raise ValueError("inventory source of type 'netbox' needs a 'url'")
+        if self.type == "oxidized":
+            if self.mode == "repo" and not self.path:
+                raise ValueError("an oxidized source in 'repo' mode needs the 'path' of Oxidized's git repository")
+            if self.mode == "api" and not self.url:
+                raise ValueError("an oxidized source in 'api' mode needs the 'url' of oxidized-web")
+            from netledger.scheduler import parse_schedule
+
+            try:
+                parse_schedule(self.poll, None)
+            except ValueError as exc:
+                raise ValueError(f"oxidized poll {self.poll!r}: {exc}") from None
         return self
+
+    @property
+    def key(self) -> str:
+        """Stable identity of an Oxidized source, for its read cursor."""
+        return f"oxidized:{self.mode}:{(self.url or self.path or '').rstrip('/')}"
 
 
 # --------------------------------------------------------------------------- git / storage
