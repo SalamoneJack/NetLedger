@@ -267,6 +267,8 @@ def _backup_json(report: Any) -> dict[str, Any]:
                 "warnings": r.warnings,
                 "files": [{"path": c.path, "action": c.action, "added": c.added, "removed": c.removed} for c in r.changes],
                 "compliance": [c.to_dict() for c in r.compliance],
+                "analysis": r.analysis.to_dict() if r.analysis and not r.initial else None,
+                "unplanned": r.unplanned,
             }
             for r in report.results
         ],

@@ -40,8 +40,36 @@ Shutting an interface down is always high risk. Changes over 150 lines are raise
 engineer would say them: `Added VLAN 40 (GUEST-WIFI)`, `bgp group LEAFS: added neighbor 10.255.1.5`,
 `firewall policy 2 (Servers): service "HTTPS" → …"SSH"`.
 
-The same analysis is added to the commit message (`Risk:` and `Summary:` lines), shown by `netledger backup`,
-and included in `config_changed` notifications.
+### Why it got that risk
+
+Every change also says **why** it scored what it did, in plain English. NetLedger reads what the change does,
+not only which section it touched:
+
+| What changed | Example reason | Risk |
+|---|---|---|
+| A permit / accept / allow rule now matches more: a host or subnet became `any`, `all` or `0.0.0.0/0`, a prefix got shorter, a wildcard got wider, the service became `ip` / `ALL` / `any`, or the rule gained members | `Policy 12 now allows any source (was 10.20.0.0/24)` | high |
+| A rule now matches less | `ACL WEB now allows a narrower source: 10.20.0.0/24 (was any)` | unchanged |
+| A new rule | `ACL GUEST entry 20: new rule allows any source, any destination and any service`, `ACL GUEST entry 10: new deny rule tightens access (...)` | high when it allows *any* |
+| A deny rule removed, a rule switched from deny to permit, a disabled permit rule enabled | `ACL WEB: deny rule removed, so traffic it blocked may now be allowed` | high |
+| An address object that rules refer to now covers more | `Address object LAN-NET now covers 10.20.0.0/16 (was 10.20.0.0/24), ...` | high |
+| An ACL attached to or detached from an interface | `ACL GUEST removed from interface Vlan40: inbound traffic there is no longer filtered` | high when detached |
+| An interface shut down or set admin-down | `Interface GigabitEthernet1/0/8 shut down: traffic through it stops` | high |
+| A routing neighbor removed or shut down, a routing process removed | `BGP neighbor 10.255.1.5 removed: routes learned from it are withdrawn` | high |
+| Route redistribution added, removed or changed | `Redistribution added in OSPF 1: redistribute static subnets, so more routes are advertised` | high |
+| The default route removed or pointed elsewhere | `Default route changed: traffic with no more specific route takes a new path` | high |
+| A local account added (admin rights are high), removed, or given different rights; AAA methods and TACACS/RADIUS servers | `New admin account 'jdoe' (privilege 15)`, `Account 'ops' rights changed: privilege 1 → privilege 15` | high for new admin rights |
+| Management access opened up: telnet or HTTP allowed, a VTY access-class removed, a FortiGate admin's trusted hosts widened | `Interface wan1 now accepts https and telnet management access (unencrypted)` | high |
+| Static NAT or a virtual IP added (it exposes an inside host), source NAT added, NAT removed | `Static NAT added: WEB-VIP maps 203.0.113.10 to 10.1.1.10, which exposes an inside host` | high for static NAT |
+| More than 150 changed lines | `Large change: 212 lines` | raised one level |
+
+Rule widening is understood in IOS / IOS-XE / NX-OS / EOS / IOS-XR access lists (wildcards, `host`, `any`,
+prefixes, ports and port ranges), ASA access lists (netmasks), FortiOS `config firewall policy`, PAN-OS
+`rulebase security rules` and Junos firewall filter terms and SRX security policies. A section with nothing more
+specific to say falls back to its category, for example `Routing change (high risk by default): router bgp 65010`.
+
+Reasons are shown next to the risk badge in the change ledger and the time machine, in the commit message (a
+`Why:` block under `Risk:`), by `netledger backup`, and in `config_changed` notifications. The JSON API and
+`netledger backup --json` return them as `reasons`, for the whole change and for each section.
 
 ### Change windows
 

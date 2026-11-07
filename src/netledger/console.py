@@ -130,6 +130,8 @@ def print_intelligence(console: Console, results: list[DeviceResult]) -> None:
         labels = ", ".join(c["label"] for c in analysis.categories()[:3])
         head.append(f"  {labels}", style="grey62")
         console.print(head)
+        for reason in analysis.reasons[:2]:
+            console.print(Text.assemble("  " + " " * width + "  ", ("why ", "grey62"), reason), highlight=False)
         for text in analysis.highlights[:3]:
             console.print(Text("  " + " " * width + "  • " + text), highlight=False)
         if len(analysis.highlights) > 3:

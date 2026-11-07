@@ -46,6 +46,15 @@ def _context(event: Event) -> str:
     return " · ".join(parts)
 
 
+def _reasons(event: Event, limit: int = 4) -> list[str]:
+    """Why a configuration change got its risk (most severe first)."""
+    return [str(reason) for reason in (event.details or {}).get("reasons") or []][:limit]
+
+
+def _slack_escape(text: str) -> str:
+    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
 class Notifier:
     def __init__(self, cfg: NotifierSettings, title: str = "NetLedger"):
         self.cfg = cfg
@@ -96,6 +105,10 @@ class SlackNotifier(Notifier):
         blocks: list[dict[str, Any]] = [
             {"type": "section", "text": {"type": "mrkdwn", "text": truncate_lines(f"{icon} *{event.title}*\n{event.message}", 60, 2900)}},
         ]
+        reasons = _reasons(event)
+        if reasons:
+            why = "*Why:*\n" + "\n".join(f"• {_slack_escape(reason)}" for reason in reasons)
+            blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": why[:2900]}})
         if _context(event):
             blocks.append({"type": "context", "elements": [{"type": "mrkdwn", "text": _context(event)}]})
         diff = self.diff_block(event, 2800)
@@ -122,6 +135,10 @@ class TeamsNotifier(Notifier):
         ]
         if event.message:
             body.append({"type": "TextBlock", "text": truncate_lines(event.message, 40, 3000), "wrap": True})
+        reasons = _reasons(event)
+        if reasons:
+            body.append({"type": "TextBlock", "text": "Why", "weight": "Bolder", "spacing": "Medium", "wrap": True})
+            body.append({"type": "TextBlock", "text": "\n".join(f"- {reason}" for reason in reasons), "wrap": True})
         facts = [{"title": k, "value": v} for k, v in (("Device", event.device), ("Site", event.site), ("Platform", event.platform), ("Time", iso(event.timestamp))) if v]
         if facts:
             body.append({"type": "FactSet", "facts": facts})
@@ -141,6 +158,9 @@ class TeamsNotifier(Notifier):
 class DiscordNotifier(Notifier):
     def send(self, event: Event) -> None:
         description = event.message or ""
+        reasons = _reasons(event)
+        if reasons:
+            description += "\n\n**Why:**\n" + "\n".join(f"• {reason}" for reason in reasons)
         diff = self.diff_block(event, 3500)
         if diff:
             description += f"\n```diff\n{diff}\n```"
@@ -178,6 +198,9 @@ class EmailNotifier(Notifier):
         message["From"] = self.cfg.from_address or ""
         message["To"] = ", ".join(self.cfg.to)
         lines = [event.title, "", event.message or ""]
+        reasons = _reasons(event)
+        if reasons:
+            lines += ["", "Why:"] + [f"  - {reason}" for reason in reasons]
         context = _context(event)
         if context:
             lines += ["", context]

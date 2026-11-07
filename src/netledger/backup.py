@@ -641,6 +641,7 @@ class BackupRunner:
         who = result.meta.get("changed_by")
         risk = analysis.risk if analysis else None
         highlights = analysis.highlights[:6] if analysis else []
+        reasons = analysis.reasons[:6] if analysis else []
         categories = analysis.categories() if analysis else []
         self.state.record_change({
             "id": f"{int(stamp * 1000)}-{slugify(device.name)}",
@@ -661,6 +662,7 @@ class BackupRunner:
             "categories": [c["key"] for c in categories],
             "category_labels": [c["label"] for c in categories],
             "highlights": highlights,
+            "reasons": reasons,
             "unplanned": result.unplanned,
             "since": previous.get("last_success"),
             "diff": truncate_lines(result.masked_diff, 200),
@@ -683,7 +685,7 @@ class BackupRunner:
             details={
                 "added": added, "removed": removed, "changed_by": who, "commit": result.commit, "risk": risk,
                 "score": analysis.score if analysis else None, "categories": [c["label"] for c in categories],
-                "highlights": highlights, "unplanned": result.unplanned,
+                "highlights": highlights, "reasons": reasons, "unplanned": result.unplanned,
             },
             timestamp=stamp,
         ))

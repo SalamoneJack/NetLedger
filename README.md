@@ -38,9 +38,11 @@ no Node.js, no CDN. It works on an air-gapped management network.
 Every change is parsed into the configuration sections it touched, whatever the vendor syntax: IOS-style
 indentation, FortiOS `config`/`edit` blocks, Junos braces, PAN-OS `set` commands and RouterOS exports.
 Each section is classified (Routing, Firewall & ACLs, Access & AAA, VPN, NAT, Interfaces, VLANs, ...),
-scored 0-100 and **summarized in plain English**. The summary appears in the console, in the commit
-message and in your Slack or Teams alert. Shutting an interface, touching BGP or adding an ACL is high
-risk; editing a description is low.
+scored 0-100 and **summarized in plain English**, with the reason behind the score: `Policy 12 now allows any
+source (was 10.20.0.0/24)`, `BGP neighbor 10.255.1.5 removed`, `New admin account 'jdoe' (privilege 15)`.
+NetLedger catches firewall rules that quietly widen in IOS, NX-OS, EOS, ASA, FortiOS, PAN-OS and Junos. The
+summary and the reasons appear in the console, in the commit message and in your Slack or Teams alert.
+Shutting an interface, touching BGP or adding an ACL is high risk; editing a description is low.
 
 **Change windows** (`changes.windows: ["sat 22:00-sun 04:00"]`) turn every change made outside them into an
 **unplanned change**: flagged in the ledger, noted in the commit, and alerted with `warning` severity.
@@ -53,6 +55,11 @@ hq-core-sw01: running config changed (+14/-0)
 Changed by: jsmith at 14:02:11 UTC Fri Oct 30 2026
 Window:     outside the approved change windows
 Risk:       high (Firewall & ACLs, Interfaces, VLANs & switching)
+Why:
+  - ACL GUEST-ISOLATION entry 20: new rule allows any source, any destination and any service
+  - ACL GUEST-ISOLATION now filters inbound traffic on interface Vlan40
+  - ACL GUEST-ISOLATION entry 10: new deny rule tightens access (10.10.40.0/24 → 10.0.0.0/8, any)
+  - VLANs & switching change (medium risk by default): VLAN 40
 Summary:
   - Added interface Vlan40 (GUEST-WIFI)
   - Added ACL GUEST-ISOLATION
@@ -153,7 +160,7 @@ health, in one tool.
 | Configuration backup with Git history | ✅ | ✅ | ✅ (also CVS / Subversion) |
 | Device coverage | 24 built-in platforms, any NAPALM driver, plus a Netmiko-based `generic` | 130+ OS types | dozens of device types |
 | Written in | Python (NAPALM, Netmiko) | Ruby | Perl and expect |
-| Plain-English change summaries and risk scores | ✅ | - | - |
+| Plain-English change summaries and risk scores, with the reason (rule widened, neighbor removed, ...) | ✅ | - | - |
 | Change windows and unplanned-change alerts | ✅ | - | - |
 | IP-aware "where is" search (subnets, wildcards, every notation) | ✅ | - | - |
 | CPU, memory, temperature, fan and PSU health checks | ✅ | - | - |
@@ -342,6 +349,11 @@ Site:       hq
 Changed by: jsmith at 14:02:11 UTC Fri Oct 30 2026
 Window:     outside the approved change windows
 Risk:       high (Firewall & ACLs, Interfaces, VLANs & switching)
+Why:
+  - ACL GUEST-ISOLATION entry 20: new rule allows any source, any destination and any service
+  - ACL GUEST-ISOLATION now filters inbound traffic on interface Vlan40
+  - ACL GUEST-ISOLATION entry 10: new deny rule tightens access (10.10.40.0/24 → 10.0.0.0/8, any)
+  - VLANs & switching change (medium risk by default): VLAN 40
 Summary:
   - Added interface Vlan40 (GUEST-WIFI)
   - Added ACL GUEST-ISOLATION

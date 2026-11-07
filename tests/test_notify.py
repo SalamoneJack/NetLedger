@@ -66,6 +66,43 @@ def test_teams_and_discord_payloads(capture: Capture) -> None:
     assert discord["embeds"][0]["description"].count("```diff") == 1
 
 
+def test_change_reasons_reach_every_channel(capture: Capture, monkeypatch: pytest.MonkeyPatch) -> None:
+    event = change_event()
+    event.details = {"risk": "high", "reasons": ["Policy 12 now allows any source (was <LAN>)", "Interface port3 shut down"]}
+    settings = settings_from_dict({"notifications": [
+        {"type": "slack", "url": "https://hooks.slack.test/x"},
+        {"type": "teams", "url": "https://teams.test/hook"},
+        {"type": "discord", "url": "https://discord.test/hook"},
+        {"type": "webhook", "url": "https://hook.test"},
+        {"type": "email", "smtp_host": "smtp.test", "from_address": "nl@example.com", "to": ["noc@example.com"]},
+    ]})
+    sent_mail: list[Any] = []
+
+    class FakeSMTP:
+        def __init__(self, *args: Any, **kwargs: Any) -> None:
+            pass
+
+        def starttls(self, **kwargs: Any) -> None:
+            pass
+
+        def send_message(self, message: Any) -> None:
+            sent_mail.append(message)
+
+        def quit(self) -> None:
+            pass
+
+    monkeypatch.setattr("smtplib.SMTP", FakeSMTP)
+    Dispatcher(settings).dispatch([event])
+    slack, teams, discord, webhook = (post["json"] or json.loads(post["data"]) for post in capture.posts)
+    assert "*Why:*\n• Policy 12 now allows any source (was &lt;LAN&gt;)\n• Interface port3 shut down" in json.dumps(slack["blocks"], ensure_ascii=False).replace("\\n", "\n")
+    teams_text = json.dumps(teams, ensure_ascii=False)
+    assert '"text": "Why"' in teams_text and "- Policy 12 now allows any source (was <LAN>)" in teams_text
+    assert "**Why:**\n• Policy 12" in discord["embeds"][0]["description"]
+    assert webhook["details"]["reasons"] == event.details["reasons"]
+    body = sent_mail[0].get_content()
+    assert "Why:\n  - Policy 12 now allows any source (was <LAN>)\n  - Interface port3 shut down" in body
+
+
 def test_webhook_signature(capture: Capture) -> None:
     settings = settings_from_dict({"notifications": [{"type": "webhook", "url": "https://hook.test", "secret": "s3"}]})
     Dispatcher(settings).dispatch([change_event()])

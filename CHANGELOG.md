@@ -4,6 +4,27 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- Every risk score is explained. Each changed section, and the change as a whole, carries plain-English
+  `reasons`, for example `Policy 12 now allows any source (was 10.20.0.0/24)`. NetLedger now detects:
+  - firewall rules that widen: a source, destination or service that becomes `any` / `all` / `0.0.0.0/0`, a
+    shorter prefix, a wider wildcard, more members. This covers IOS / IOS-XE, NX-OS, EOS, IOS-XR and ASA
+    access lists, FortiOS policies, PAN-OS security rules, and Junos filter terms and SRX policies, and
+    raises the section to high risk;
+  - new permit and deny rules, removed deny rules, and rules switched between deny and permit;
+  - address objects that widen, and ACLs attached to or removed from interfaces;
+  - interface shutdowns, removed routing neighbors, redistribution and default route changes;
+  - local accounts and their rights, AAA methods and servers, and management access (telnet, HTTP,
+    access-class, FortiGate trusted hosts);
+  - NAT changes, and changes over 150 lines.
+- The reasons appear in a `Why:` block under `Risk:` in the commit message, in Slack, Teams, Discord and
+  email notifications (`details.reasons` for webhooks and PagerDuty), next to the risk badge in the change
+  ledger and the time machine, in `netledger backup` output and in the JSON API.
+- `netledger backup --json` includes each device's change analysis.
+
 ## [1.0.0] - 2026-10-31
 
 ### Added

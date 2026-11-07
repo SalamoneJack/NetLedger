@@ -166,6 +166,7 @@ def change_entry(change: dict[str, Any], now: float, links: Any = None, expanded
     device = change.get("device") or ""
     risk = change.get("risk")
     highlights = change.get("highlights") or []
+    reasons = [str(r) for r in change.get("reasons") or []]
     summary = highlights[0] if highlights else f"+{change.get('added', 0)}/-{change.get('removed', 0)} lines"
     more = len(highlights) - 1
     sha = change.get("commit") or ""
@@ -184,14 +185,20 @@ def change_entry(change: dict[str, Any], now: float, links: Any = None, expanded
     if not compact:
         rest = "".join(f"<li>{e(h)}</li>" for h in highlights[1:6])
         diff = change.get("diff")
-        body = (f'<ul class="hl">{rest}</ul>' if rest else "") + (render_diff(diff, show_files=False) if diff else "")
+        why = "".join(f"<li>{e(r)}</li>" for r in reasons)
+        body = (
+            (f'<div class="why-block"><span>Why</span><ul>{why}</ul></div>' if why else "")
+            + (f'<ul class="hl">{rest}</ul>' if rest else "")
+            + (render_diff(diff, show_files=False) if diff else "")
+        )
         details = f'<div class="entry-more">{body}<a class="more" href="{tm}">Open in time machine {icon("chev")}</a></div>' if body else ""
-    search = " ".join(str(v) for v in (device, change.get("site"), who, change.get("platform_name"), " ".join(highlights))).lower()
+    search = " ".join(str(v) for v in (device, change.get("site"), who, change.get("platform_name"), " ".join(highlights), " ".join(reasons))).lower()
     open_attr = " open" if expanded else ""
     stats = f'<span class="add">+{e(change.get("added", 0))}</span><span class="del">−{e(change.get("removed", 0))}</span>'
+    why_html = f'<span class="why" title="{e(chr(10).join(reasons))}">{e(reasons[0])}</span>' if reasons else ""
     inner = (
         f'<span class="node r-{e(risk or "none")}"></span>'
-        f'<div class="entry-main"><div class="entry-top"><a class="dev" href="{device_href(device)}">{e(device)}</a>{risk_pill(risk)}{flags}'
+        f'<div class="entry-main"><div class="entry-top"><a class="dev" href="{device_href(device)}">{e(device)}</a>{risk_pill(risk)}{why_html}{flags}'
         f'<span class="entry-when">{ago(change.get("ts"), now)}</span></div>'
         f'<div class="entry-sum">{e(summary)}{f" <span class=more-n>+{more} more</span>" if more > 0 else ""}</div>'
         f'<div class="entry-meta">{who_html}<span class="stats">{stats}</span>{cats}{sha_html}</div></div>'
@@ -467,8 +474,10 @@ def time_machine(view: dict[str, Any], row: dict[str, Any]) -> str:
         stat = ""
         if version.get("added") is not None:
             stat = f'<span class="v-stat"><span class="add">+{version.get("added", 0)}</span><span class="del">−{version.get("removed", 0)}</span></span>'
+        why = version.get("reasons") or []
+        title = f' title="{e(chr(10).join(why))}"' if why else ""
         items.append(
-            f'<li class="v {state}" data-sha="{e(version["sha"])}" data-prev="{e(versions[index + 1]["sha"]) if index + 1 < len(versions) else ""}" tabindex="0">'
+            f'<li class="v {state}" data-sha="{e(version["sha"])}" data-prev="{e(versions[index + 1]["sha"]) if index + 1 < len(versions) else ""}" tabindex="0"{title}>'
             f'<span class="v-dot r-{e(version.get("risk") or "none")}"></span><span class="v-main"><b>{e(_version_label(version))}</b>'
             f'<span class="muted">{e(who or "")}</span>'
             f'<small>{e(version.get("summary") or version.get("subject") or "")}</small></span>{stat}</li>'
@@ -890,6 +899,7 @@ def version_rows(versions: list[dict[str, Any]], changes: list[dict[str, Any]]) 
             "changed_by": record.get("changed_by"),
             "unplanned": record.get("unplanned"),
             "highlights": record.get("highlights") or [],
+            "reasons": record.get("reasons") or [],
         })
     return out
 

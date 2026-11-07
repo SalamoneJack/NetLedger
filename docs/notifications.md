@@ -28,7 +28,7 @@ Run `netledger notify-test` to send a test message through each notifier.
 
 | Event | Severity | When |
 |---|---|---|
-| `config_changed` | info, **warning when unplanned** | A device's configuration changed (not sent for the very first backup). Includes the risk, a plain-English summary of what changed and the masked diff. Changes outside `changes.windows` are titled *unplanned configuration change* and sent as `warning`. |
+| `config_changed` | info, **warning when unplanned** | A device's configuration changed (not sent for the very first backup). Includes the risk, **why** it got that risk (a *Why* section: `Policy 12 now allows any source (was 10.20.0.0/24)`), a plain-English summary of what changed and the masked diff. Webhooks and PagerDuty get the reasons as `details.reasons`. Changes outside `changes.windows` are titled *unplanned configuration change* and sent as `warning`. |
 | `backup_failed` | warning | A device failed `backup.failure_alert_after` backups in a row. |
 | `backup_recovered` | info | Backups work again after `backup_failed`. |
 | `health_warning` / `health_critical` | warning / critical | A device entered that health state. |

@@ -54,7 +54,9 @@ def test_ios_changes_are_grouped_classified_and_scored() -> None:
     assert texts[0] in ("Added ACL GUEST", "interface GigabitEthernet1/0/8: switchport access vlan 10 → 40, shut down")  # high risk first
     assert 0 < analysis.score <= 100
     summary = commit_summary(analysis)
-    assert summary[0].startswith("Risk:       high (") and summary[1] == "Summary:" and summary[2].startswith("  - ")
+    assert summary[0].startswith("Risk:       high (") and summary[1] == "Why:" and summary[2].startswith("  - ")
+    assert summary[2] == "  - Interface GigabitEthernet1/0/8 shut down: traffic through it stops"
+    assert "Summary:" in summary and summary[summary.index("Summary:") + 1].startswith("  - ")
 
 
 def test_descriptions_are_low_risk_and_names_are_free_text() -> None:

@@ -733,11 +733,15 @@ def intel_card(analysis: dict[str, Any] | None, unplanned: bool | None = None, w
         meta.append(f'{avatar(who)}<span>{e(who)}</span>')
     if when:
         meta.append(ago(when, now))
+    reasons = analysis.get("reasons") or []
+    why = "".join(f"<li>{e(reason)}</li>" for reason in reasons[:5])
+    more = f'<li class="more-n">and {len(reasons) - 5} more</li>' if len(reasons) > 5 else ""
     return (
         f'<div class="intel"><div class="intel-h">{icon("sparkle")}<b>Change intelligence</b>{risk_pill(risk)}'
         f'<span class="score" title="Risk score">{e(analysis.get("score", 0))}<small>/100</small></span>{flags}'
         f'<span class="intel-meta">{"".join(meta)}</span></div>'
-        f'{risk_meter(analysis.get("score"), risk)}<div class="chips">{cats}</div><ul class="items">{"".join(items)}</ul></div>'
+        + (f'<ul class="intel-why" aria-label="Why">{why}{more}</ul>' if why else "")
+        + f'{risk_meter(analysis.get("score"), risk)}<div class="chips">{cats}</div><ul class="items">{"".join(items)}</ul></div>'
     )
 
 

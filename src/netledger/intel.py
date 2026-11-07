@@ -15,6 +15,8 @@ import re
 from dataclasses import dataclass, field
 from typing import Any, Optional
 
+from netledger.reasons import explain
+
 RISK_LEVELS = ("low", "medium", "high")
 RISK_ORDER = {level: index for index, level in enumerate(RISK_LEVELS)}
 RISK_WEIGHT = {"low": 6, "medium": 15, "high": 34}
@@ -331,6 +333,13 @@ class ChangeItem:
     removed: int = 0
     categories: list[str] = field(default_factory=list)
     order: int = 0
+    reasons: list[str] = field(default_factory=list)  # why this section got its risk, most severe first
+    reason_ranks: list[int] = field(default_factory=list, repr=False)  # per reason: 0 raised the risk, 1 explains it, 2 names the category
+
+    @property
+    def explained(self) -> bool:
+        """The reasons say what the change does, not only which category it falls in."""
+        return any(rank < 2 for rank in self.reason_ranks) if self.reason_ranks else bool(self.reasons)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -342,6 +351,7 @@ class ChangeItem:
             "text": self.text,
             "added": self.added,
             "removed": self.removed,
+            "reasons": list(self.reasons),
         }
 
 
@@ -354,6 +364,7 @@ class Analysis:
     items: list[ChangeItem] = field(default_factory=list)
     syntax: str = "indent"
     initial: bool = False
+    notes: list[tuple[str, str]] = field(default_factory=list)  # (risk, reason) about the change as a whole
 
     @property
     def ranked(self) -> list[ChangeItem]:
@@ -362,6 +373,24 @@ class Analysis:
     @property
     def highlights(self) -> list[str]:
         return [item.text for item in self.ranked]
+
+    @property
+    def reasons(self) -> list[str]:
+        """Why the change got its risk: every section's reasons plus notes on the whole change.
+
+        Most severe first. At the same level: reasons that raised a risk, then notes on the whole change
+        (its size), then other specific reasons, then reasons that only name a category. Repeats are dropped.
+        """
+        group = {0: 0, 1: 2, 2: 3}
+        ranked: list[tuple[int, int, int, int, str]] = []
+        for index, item in enumerate(self.ranked):
+            ranks = list(item.reason_ranks) + [1] * (len(item.reasons) - len(item.reason_ranks))
+            for position, (text, rank) in enumerate(zip(item.reasons, ranks)):
+                ranked.append((-RISK_ORDER[item.risk], group.get(rank, 2), index, position, text))
+        for position, (level, text) in enumerate(self.notes):
+            ranked.append((-RISK_ORDER[level], 1, position, 0, text))
+        ranked.sort(key=lambda entry: entry[:4])
+        return list(dict.fromkeys(entry[4] for entry in ranked))
 
     def categories(self) -> list[dict[str, Any]]:
         stats: dict[str, dict[str, Any]] = {}
@@ -385,6 +414,7 @@ class Analysis:
             "sections": len(self.items),
             "categories": self.categories(),
             "highlights": self.highlights[:8],
+            "reasons": self.reasons[:max_items],
             "items": [item.to_dict() for item in self.ranked[:max_items]],
         }
 
@@ -622,6 +652,20 @@ def _slide(parsed: Parsed, start: int, end: int) -> tuple[int, int]:
     return min(candidates, key=score)
 
 
+Lines = list[tuple[tuple[str, ...], str]]
+
+
+def _sections(syntax: str, parsed: Parsed) -> dict[tuple[str, ...], Lines]:
+    """Every line of every section as ``(path, line relative to its section)``."""
+    sections: dict[tuple[str, ...], Lines] = {}
+    for index, (path, line) in enumerate(zip(parsed.paths, parsed.lines)):
+        if path is None or not line.strip():
+            continue
+        key = _item_key(syntax, path, line, index in parsed.headers)
+        sections.setdefault(key, []).append((path, _relative(syntax, key, line)))
+    return sections
+
+
 def analyze(old: str | None, new: str | None, platform: str | None = None) -> Analysis:
     """Analyse the change from ``old`` to ``new`` configuration text (both normalized, secrets masked)."""
     if old is None:
@@ -629,8 +673,7 @@ def analyze(old: str | None, new: str | None, platform: str | None = None) -> An
         return Analysis(risk=None, score=0, added=lines, removed=0, initial=True, syntax=detect_syntax(new or "", platform))
     syntax = detect_syntax(new or old, platform)
     before, after = parse(old, syntax), parse(new, syntax)
-    keys_before = {_item_key(syntax, p, line, i in before.headers) for i, (p, line) in enumerate(zip(before.paths, before.lines)) if p is not None}
-    keys_after = {_item_key(syntax, p, line, i in after.headers) for i, (p, line) in enumerate(zip(after.paths, after.lines)) if p is not None}
+    sections_before, sections_after = _sections(syntax, before), _sections(syntax, after)
 
     groups: dict[tuple[str, ...], dict[str, Any]] = {}
     total_added = total_removed = 0
@@ -649,8 +692,10 @@ def analyze(old: str | None, new: str | None, platform: str | None = None) -> An
                 if path is None or not line.strip():
                     continue
                 key = _item_key(syntax, path, line, index in parsed.headers)
-                group = groups.setdefault(key, {"added": [], "removed": [], "categories": [], "order": len(groups)})
-                group[side].append(_relative(syntax, key, line))
+                group = groups.setdefault(key, {"added": [], "removed": [], "categories": [], "lines": {"added": [], "removed": []}, "order": len(groups)})
+                rel = _relative(syntax, key, line)
+                group[side].append(rel)
+                group["lines"][side].append((path, rel))
                 group["categories"].append(classify(path, line, syntax))
                 if side == "added":
                     total_added += 1
@@ -659,16 +704,25 @@ def analyze(old: str | None, new: str | None, platform: str | None = None) -> An
 
     names = _block_names(syntax, after) if syntax == "fortios" else {}
     names.update({k: v for k, v in (_block_names(syntax, before) if syntax == "fortios" else {}).items() if k not in names})
-    items = [_build_item(syntax, key, group, key in keys_before, key in keys_after, names.get(key)) for key, group in groups.items()]
-    items = _merge_single_lines(syntax, items, groups)
+    items = [
+        _build_item(
+            syntax, key, group, key in sections_before, key in sections_after, names.get(key),
+            sections_before.get(key, []), sections_after.get(key, []), platform,
+        )
+        for key, group in groups.items()
+    ]
+    items = _merge_single_lines(syntax, items, groups, platform)
     if not items:
         return Analysis(risk="low", score=0, added=total_added, removed=total_removed, syntax=syntax)
     changed = total_added + total_removed
     risk = max((item.risk for item in items), key=RISK_ORDER.__getitem__)
-    if changed > 150 and risk != "high":
-        risk = RISK_LEVELS[RISK_ORDER[risk] + 1]
+    notes: list[tuple[str, str]] = []
+    if changed > 150:
+        if risk != "high":
+            risk = RISK_LEVELS[RISK_ORDER[risk] + 1]
+        notes.append((risk, f"Large change: {changed} lines"))
     score = sum(RISK_WEIGHT[item.risk] for item in items) + (20 if changed > 150 else 8 if changed > 40 else 0)
-    return Analysis(risk=risk, score=min(100, score), added=total_added, removed=total_removed, items=items, syntax=syntax)
+    return Analysis(risk=risk, score=min(100, score), added=total_added, removed=total_removed, items=items, syntax=syntax, notes=notes)
 
 
 def _block_names(syntax: str, parsed: Parsed) -> dict[tuple[str, ...], str]:
@@ -682,8 +736,43 @@ def _block_names(syntax: str, parsed: Parsed) -> dict[tuple[str, ...], str]:
     return names
 
 
+def _default_reason(label: str, category: str, categories: list[str], risk: str) -> str:
+    """The reason when nothing more specific is known: the category that set the risk."""
+    if category == "docs":
+        return f"Only descriptions or names changed: {label}"
+    decisive = next((c for c in (category, *categories) if c != "docs" and CATEGORIES[c][1] == risk), category)
+    if decisive == "other":
+        return f"Change outside the known categories ({risk} risk by default): {label}"
+    return f"{CATEGORIES[decisive][0]} change ({risk} risk by default): {label}"
+
+
+def _explain(
+    item: ChangeItem, syntax: str, removed: Lines, added: Lines, before: Lines, after: Lines, platform: str | None
+) -> ChangeItem:
+    """Attach the reasons for an item and raise its risk to what they show."""
+    findings = explain(syntax, item.key, item.label, item.action, item.category, item.categories, removed, added, before, after, platform)
+    for finding in findings:
+        if finding.level and RISK_ORDER[finding.level] > RISK_ORDER[item.risk]:
+            item.risk = finding.level
+    if findings:
+        item.reasons = [finding.text for finding in findings]
+        item.reason_ranks = [0 if finding.level else 1 for finding in findings]
+    else:
+        item.reasons = [_default_reason(item.label, item.category, item.categories, item.risk)]
+        item.reason_ranks = [2]
+    return item
+
+
 def _build_item(
-    syntax: str, key: tuple[str, ...], group: dict[str, Any], existed: bool, exists: bool, name: str | None = None
+    syntax: str,
+    key: tuple[str, ...],
+    group: dict[str, Any],
+    existed: bool,
+    exists: bool,
+    name: str | None = None,
+    before: Lines | None = None,
+    after: Lines | None = None,
+    platform: str | None = None,
 ) -> ChangeItem:
     added, removed = group["added"], group["removed"]
     label = label_for(syntax, key)
@@ -730,10 +819,14 @@ def _build_item(
         text = f"Added {label}{_section_name(added, label)}"
     else:
         text = f"Removed {label}{_section_name(removed, label)}"
-    return ChangeItem(key, label, action, category, risk, text, len(added), len(removed), categories, group["order"])
+    item = ChangeItem(key, label, action, category, risk, text, len(added), len(removed), categories, group["order"])
+    lines = group.get("lines") or {"removed": [], "added": []}
+    return _explain(item, syntax, lines["removed"], lines["added"], before or [], after or [], platform)
 
 
-def _merge_single_lines(syntax: str, items: list[ChangeItem], groups: dict[tuple[str, ...], dict[str, Any]]) -> list[ChangeItem]:
+def _merge_single_lines(
+    syntax: str, items: list[ChangeItem], groups: dict[tuple[str, ...], dict[str, Any]], platform: str | None = None
+) -> list[ChangeItem]:
     """Turn 'Removed ntp server A' + 'Added ntp server B' (top-level lines) into one modification."""
     if syntax in ("set", "routeros"):
         return items
@@ -748,20 +841,31 @@ def _merge_single_lines(syntax: str, items: list[ChangeItem], groups: dict[tuple
         if old_item not in result or new_item not in result:
             continue
         result.remove(old_item)
-        category, risk = (("docs", "low") if _is_doc(key) else (new_item.category, new_item.risk))
+        if _is_doc(key):
+            category, risk = "docs", "low"
+        else:  # the line's own level, before anything the added line alone suggested
+            category = new_item.category
+            risk = max((CATEGORIES[c][1] for c in new_item.categories if c != "docs"), key=RISK_ORDER.__getitem__, default="low")
         text = _change_text(key, old, new).replace(f"{key} ", f"{key}: ", 1)
-        result[result.index(new_item)] = ChangeItem(
-            (key,), key, "modified", category, risk, text, 1, 1, [category], min(old_item.order, new_item.order),
-        )
+        merged = ChangeItem((key,), key, "modified", category, risk, text, 1, 1, [category], min(old_item.order, new_item.order))
+        pair_old, pair_new = [((), old_line)], [((), new_line)]
+        result[result.index(new_item)] = _explain(merged, syntax, pair_old, pair_new, pair_old, pair_new, platform)
     return result
 
 
-def commit_summary(analysis: Analysis, limit: int = 6) -> list[str]:
-    """Lines for the commit message body."""
+def commit_summary(analysis: Analysis, limit: int = 6, why: int = 4) -> list[str]:
+    """Lines for the commit message body: the risk, why, and what changed."""
     if analysis.initial or not analysis.risk or not analysis.items:
         return []
     labels = ", ".join(c["label"] for c in analysis.categories()[:4])
-    lines = [f"Risk:       {analysis.risk} ({labels})", "Summary:"]
+    lines = [f"Risk:       {analysis.risk} ({labels})"]
+    reasons = analysis.reasons
+    if reasons:
+        lines.append("Why:")
+        lines += [f"  - {text}" for text in reasons[:why]]
+        if len(reasons) > why:
+            lines.append(f"  - ... and {len(reasons) - why} more")
+    lines.append("Summary:")
     ranked = analysis.highlights
     lines += [f"  - {text}" for text in ranked[:limit]]
     if len(ranked) > limit:

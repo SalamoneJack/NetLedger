@@ -243,13 +243,17 @@ def test_change_intelligence_ledger_and_change_windows(make_env, monkeypatch: py
     body = git(settings.data_path / "repo", "log", "-1", "--format=%B")
     assert "Window:     outside the approved change windows" in body
     assert "Risk:       high (" in body and "  - Added ACL GUEST-ISOLATION" in body
+    opened = "ACL GUEST-ISOLATION entry 20: new rule allows any source, any destination and any service"
+    assert body.index("Risk:") < body.index("Why:") < body.index("Summary:") and f"  - {opened}" in body
 
     change = [e for e in recorder.events if e.type == "config_changed"][0]
     assert change.severity == "warning" and change.title == "core1: unplanned configuration change"
     assert change.details["risk"] == "high" and "• Added VLAN 40 (GUEST-WIFI)" in change.message and change.timestamp == noon + 600
+    assert opened in change.details["reasons"]
 
     ledger = state.changes()
     assert len(ledger) == 1 and ledger[0]["unplanned"] is True and ledger[0]["commit"] == result.commit
+    assert ledger[0]["reasons"] == change.details["reasons"] == result.analysis.reasons[:6]
     assert ledger[0]["since"] == noon and "Added ACL GUEST-ISOLATION" in ledger[0]["highlights"] and ledger[0]["diff"]
     assert state.section("core1", "backup")["last_analysis"]["risk"] == "high"
     assert state.activity(limit=1)[0]["title"] == "core1: unplanned configuration change"
