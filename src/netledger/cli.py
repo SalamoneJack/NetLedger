@@ -475,6 +475,80 @@ def cmd_search(args: argparse.Namespace) -> int:
     return 0 if matches else 1
 
 
+def _stored_config(settings: Settings, device: Device) -> str | None:
+    """The latest backed-up running configuration of a device, from the local clone or mirror."""
+    from netledger.inventory import device_dir
+
+    path = f"{device_dir(device, settings.git)}/running-config.{device.platform_info.extension}"
+    if settings.git.backend == "github":
+        mirror = settings.data_path / "mirror" / path
+        if mirror.is_file():
+            return mirror.read_text(encoding="utf-8", errors="replace")
+        from netledger.storage.github import GitHubStore
+
+        store = GitHubStore(settings.git)
+        store.prepare()
+        return store.read(path)
+    repo = settings.resolve_path(settings.git.workdir) if settings.git.workdir else settings.data_path / "repo"
+    target = repo / path
+    return target.read_text(encoding="utf-8", errors="replace") if target.is_file() else None
+
+
+def cmd_sanitize(args: argparse.Namespace) -> int:
+    from netledger.platforms import get_platform, resolve_platform
+    from netledger.sanitize import Sanitizer
+    from netledger.storage import StoreError
+
+    platform = None
+    names: list[str] = []
+    if args.device:
+        if args.file not in (None, "-"):
+            err.print("[red]Give either a file or --device, not both.[/]")
+            return 2
+        settings = _settings(args)
+        device = next((d for d in load_inventory(settings) if d.name == args.device), None)
+        if device is None:
+            err.print(f"[red]No device named {args.device!r} in the inventory.[/]")
+            return 2
+        try:
+            text = _stored_config(settings, device)
+        except StoreError as exc:
+            err.print(f"[red]Cannot read the stored configuration:[/] {exc}")
+            return 2
+        if text is None:
+            err.print(f"[yellow]No stored configuration for {device.name} yet.[/] Run 'netledger backup -d {device.name}' first.")
+            return 2
+        platform = device.platform_info
+        names = [device.name, device.host]
+    elif args.file in (None, "-"):
+        text = sys.stdin.read()
+    else:
+        try:
+            text = Path(args.file).read_text(encoding="utf-8", errors="replace")
+        except OSError as exc:
+            err.print(f"[red]Cannot read {args.file}:[/] {exc}")
+            return 2
+    if args.platform:
+        key = resolve_platform(args.platform)
+        if key is None:
+            err.print(f"[red]Unknown platform {args.platform!r}.[/] 'netledger platforms' lists them.")
+            return 2
+        platform = get_platform(key)
+    sanitizer = Sanitizer(platform, keep_private=args.keep_private, names=names)
+    output = sanitizer.sanitize(text)
+    if args.output:
+        with open(args.output, "w", encoding="utf-8", newline="\n") as handle:
+            handle.write(output)
+    elif hasattr(sys.stdout, "buffer"):
+        sys.stdout.flush()
+        sys.stdout.buffer.write(output.encode("utf-8"))
+        sys.stdout.buffer.flush()
+    else:
+        sys.stdout.write(output)
+    err.print(f"[green]Sanitized:[/] {sanitizer.summary()}. Read it through before you share it.", highlight=False)
+    return 0
+
+
 def cmd_demo(args: argparse.Namespace) -> int:
     from netledger import demo
 
@@ -575,6 +649,14 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--ip", action="store_true", help="IP-aware search: subnets containing the address, ACLs, routes, objects")
     p.add_argument("--regex", action="store_true", help="treat the pattern as a regular expression even if it looks like an address")
     p.set_defaults(func=cmd_search)
+
+    p = sub.add_parser("sanitize", help="remove secrets, addresses and names from a configuration or command output before sharing it")
+    p.add_argument("file", nargs="?", default="-", help="configuration or command output (default: standard input)")
+    p.add_argument("--platform", help="the platform it comes from, for its secret rules (default: guessed from the syntax)")
+    p.add_argument("-o", "--output", help="write the result to this file instead of standard output")
+    p.add_argument("--keep-private", action="store_true", help="leave RFC 1918 and IPv6 unique-local addresses as they are")
+    p.add_argument("--device", metavar="NAME", help="sanitize the latest backed-up configuration of this inventory device")
+    p.set_defaults(func=cmd_sanitize)
 
     p = sub.add_parser("demo", help="try NetLedger with simulated devices (no hardware needed)")
     p.add_argument("--dir", dest="directory", default="netledger-demo", help="demo directory (default: ./netledger-demo)")

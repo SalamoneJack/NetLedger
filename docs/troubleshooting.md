@@ -12,6 +12,27 @@ NETLEDGER_DEBUG_LIBS=1 netledger --log-level DEBUG test -d DEVICE   # include Ne
 For a raw transcript of a CLI session add `optional_args: {session_log: /tmp/DEVICE.log}` to the
 device (Netmiko-based platforms). **The log contains passwords**, so delete it afterwards.
 
+## Reporting a parser bug
+
+When NetLedger reads a configuration or command output wrongly (wrong sections, a missing metric, a wrong
+risk or reason), the fix starts with the output itself. Make it safe to share first:
+
+```bash
+netledger sanitize --device DEVICE -o DEVICE.txt     # the latest backup of a device
+netledger sanitize show-env.txt -o show-env-clean.txt
+```
+
+Sanitizing replaces:
+
+- secrets (the platform's rules, then generic ones);
+- addresses, consistently and prefix-preserving, so a host stays inside its subnet;
+- host, domain and user names, SNMP communities, descriptions, MAC and serial numbers, AS numbers, banners
+  and key material.
+
+Lines, indentation and keywords stay as they are, so the result parses like the original. Use
+`--platform` when the syntax is ambiguous, and `--keep-private` to keep RFC 1918 addresses. Then open a
+[parser bug](https://github.com/SalamoneJack/NetLedger/issues/new?template=parser_bug.yml) with it.
+
 ## Connecting
 
 **`Authentication failed`.** Check the credential set name and the variables behind it. If several

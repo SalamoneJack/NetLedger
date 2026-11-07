@@ -18,7 +18,7 @@ body:
     id: logs
     attributes:
       label: Output / logs
-      description: Run with `--log-level DEBUG`. Remove hostnames, IPs and secrets first.
+      description: Run with `--log-level DEBUG`. Remove hostnames, IPs and secrets first (`netledger sanitize` does that for configurations and command output).
       render: shell
   - type: input
     id: version
