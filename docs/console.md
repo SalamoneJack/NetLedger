@@ -36,7 +36,8 @@ classified:
 | Descriptions | description, alias, name and remark changes only | low |
 
 Shutting an interface down is always high risk. Changes over 150 lines are raised one level. The score
-(0-100) adds up the sections touched, so many medium changes outrank one. Summaries are written the way an
+(0-100) adds up the sections touched, so many medium changes outrank one. Levels, points and a score
+multiplier can be changed globally or per device and group: see [`risk`](configuration.md#risk). Summaries are written the way an
 engineer would say them: `Added VLAN 40 (GUEST-WIFI)`, `bgp group LEAFS: added neighbor 10.255.1.5`,
 `firewall policy 2 (Servers): service "HTTPS" → …"SSH"`.
 

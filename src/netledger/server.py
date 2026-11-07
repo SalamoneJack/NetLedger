@@ -14,8 +14,10 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any, Callable
 from urllib.parse import parse_qs, quote, unquote, urlparse
 
+from pydantic import ValidationError
+
 from netledger import __version__
-from netledger.config import Settings
+from netledger.config import RiskSettings, Settings
 from netledger.history import MetricsHistory
 from netledger.intel import analyze
 from netledger.metrics import render_metrics
@@ -305,6 +307,17 @@ class App:
         except KeyError:
             return get_platform("generic")
 
+    def risk_profile(self, row: dict[str, Any]) -> Any:
+        """How a device's changes are scored: the global risk settings plus its own (or its groups')."""
+        info = row.get("info") or {}
+        device = None
+        if info.get("risk"):
+            try:
+                device = RiskSettings.model_validate(info["risk"])
+            except ValidationError:
+                device = None
+        return self.settings.risk.resolve(device, info.get("risk_origin") or "")
+
     def compare(self, row: dict[str, Any], frm: str | None, to: str) -> dict[str, Any]:
         new = self.show(row, to)
         if new is None:
@@ -318,7 +331,7 @@ class App:
             "from": frm,
             "to": to,
             "diff": unified_diff(old, new, path),
-            "analysis": analyze(old, new, platform.key).to_dict(max_items=12),
+            "analysis": analyze(old, new, platform.key, risk=self.risk_profile(row)).to_dict(max_items=12),
         }
 
     def time_machine(self, row: dict[str, Any], to: str | None = None, frm: str | None = None) -> dict[str, Any]:

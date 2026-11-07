@@ -12,8 +12,18 @@ from pathlib import Path
 from typing import Any, Iterable
 
 import yaml
+from pydantic import ValidationError
 
-from netledger.config import ConfigError, CredentialSet, GitSettings, InventorySource, Settings, interpolate
+from netledger.config import (
+    ConfigError,
+    CredentialSet,
+    GitSettings,
+    InventorySource,
+    RiskSettings,
+    Settings,
+    format_validation_error,
+    interpolate,
+)
 from netledger.platforms import Platform, custom_platform, get_platform, resolve_platform
 from netledger.utils import deep_merge, safe_path_component, slugify, unique
 
@@ -22,7 +32,7 @@ log = logging.getLogger(__name__)
 DEVICE_FIELDS = frozenset({
     "name", "host", "platform", "driver", "port", "site", "role", "description", "groups", "tags",
     "credentials", "username", "password", "secret", "optional_args", "timeout", "backup", "health",
-    "retrieve", "commands", "vars", "enabled",
+    "retrieve", "commands", "vars", "enabled", "risk",
 })
 GROUP_FIELDS = (DEVICE_FIELDS - {"name", "host"}) | {"groups"}
 RETRIEVE_KINDS = ("running", "startup", "candidate")
@@ -52,6 +62,8 @@ class Device:
     retrieve: list[str] | None = None
     commands: list[Any] = field(default_factory=list)
     vars: dict[str, Any] = field(default_factory=dict)
+    risk: RiskSettings | None = None  # scoring overrides from the device and its groups
+    risk_origin: str = ""  # the group (or device) that set the risk multiplier
     source: str = ""
 
     @property
@@ -80,7 +92,7 @@ class Device:
     def summary(self) -> dict[str, Any]:
         """Public, secret-free description of the device."""
         info = self.platform_info
-        return {
+        data = {
             "name": self.name,
             "host": self.host,
             "platform": info.key,
@@ -94,6 +106,10 @@ class Device:
             "backup": self.backup,
             "health": self.health,
         }
+        if self.risk is not None:
+            data["risk"] = self.risk.model_dump(exclude_unset=True)
+            data["risk_origin"] = self.risk_origin
+        return data
 
 
 # --------------------------------------------------------------------------- parsing helpers
@@ -176,9 +192,15 @@ def build_device(raw: dict[str, Any], where: str) -> Device:
         if not (isinstance(entry, str) or (isinstance(entry, dict) and entry.get("command"))):
             raise ConfigError(f"{where}: each entry in 'commands' must be a string or have a 'command' key")
 
-    for mapping in ("optional_args", "vars"):
+    for mapping in ("optional_args", "vars", "risk"):
         if raw.get(mapping) is not None and not isinstance(raw.get(mapping), dict):
             raise ConfigError(f"{where}: '{mapping}' must be a mapping")
+    risk = None
+    if raw.get("risk"):
+        try:
+            risk = RiskSettings.model_validate(_undot(raw["risk"]))
+        except ValidationError as exc:
+            raise ConfigError(format_validation_error(exc, f"{where}: risk")) from None
 
     credentials = _as_list(raw.get("credentials"), where, "credentials") or ["default"]
     host = str(raw.get("host") or name).strip()
@@ -205,7 +227,30 @@ def build_device(raw: dict[str, Any], where: str) -> Device:
         retrieve=retrieve,
         commands=list(commands),
         vars=dict(raw.get("vars") or {}),
+        risk=risk,
     )
+
+
+def _undot(mapping: dict[str, Any]) -> dict[str, Any]:
+    """``{"categories.services": "medium"}`` (a CSV header) -> ``{"categories": {"services": "medium"}}``."""
+    result: dict[str, Any] = {}
+    for key, value in mapping.items():
+        target = result
+        *parents, leaf = str(key).split(".")
+        for parent in parents:
+            target = target.setdefault(parent, {})
+        target[leaf] = _undot(value) if isinstance(value, dict) else value
+    return result
+
+
+def _risk_origin(layers: Iterable[tuple[str, dict[str, Any]]]) -> str:
+    """The last layer (defaults, a group, the device) that set the risk multiplier."""
+    origin = ""
+    for label, layer in layers:
+        risk = layer.get("risk")
+        if isinstance(risk, dict) and "multiplier" in _undot(risk):
+            origin = label
+    return origin
 
 
 def _merge_layers(layers: Iterable[dict[str, Any]]) -> dict[str, Any]:
@@ -282,6 +327,7 @@ def load_yaml_inventory(path: Path, defaults: dict[str, Any] | None = None) -> l
         merged.pop("enabled", None)
         device = build_device(merged, where)
         device.source = str(path)
+        device.risk_origin = _risk_origin([("defaults", file_defaults), *((g, groups[g]) for g in expanded), (device.name, raw)])
         devices.append(device)
     return devices
 
@@ -324,6 +370,7 @@ def load_csv_inventory(path: Path, defaults: dict[str, Any] | None = None) -> li
             merged = interpolate(merged, path.parent, path.name)
             device = build_device(merged, f"{path.name}:{line_no}")
             device.source = str(path)
+            device.risk_origin = _risk_origin([("defaults", defaults or {}), (device.name, raw)])
             devices.append(device)
     return devices
 
@@ -388,6 +435,7 @@ def load_netbox_inventory(source: InventorySource) -> list[Device]:
         raw.pop("enabled", None)
         device = build_device(raw, f"netbox:{name}")
         device.source = base
+        device.risk_origin = _risk_origin([("defaults", source.defaults), ("NetBox config context", context)])
         devices.append(device)
     return devices
 

@@ -499,7 +499,10 @@ class BackupRunner:
             )
             primary = next((c for c in result.config_changes if c.kind == "running"), result.config_changes[0])
             try:
-                result.analysis = analyze(self.normalizer.mask(primary.old, platform), self.normalizer.mask(primary.new, platform), platform.key)
+                result.analysis = analyze(
+                    self.normalizer.mask(primary.old, platform), self.normalizer.mask(primary.new, platform), platform.key,
+                    risk=self.settings.risk.resolve(device.risk, device.risk_origin),
+                )
             except Exception as exc:  # noqa: BLE001 - analysis is advisory; never fail a backup over it
                 log.warning("%s: change analysis failed: %s", device.name, exc)
             if not result.initial and self.calendar.enabled:

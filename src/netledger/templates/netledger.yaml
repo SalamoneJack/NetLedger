@@ -98,6 +98,13 @@ changes:
   #  - "weekdays 19:00-21:00"
   # timezone: America/New_York
 
+# How changes are scored. Devices and groups in the inventory can set the same keys
+# (for example a lab group at multiplier 0.5 and the edge firewalls at 1.5).
+risk:
+  categories: {}                # e.g. {services: medium, docs: low}
+  # weights: {low: 6, medium: 15, high: 34}
+  multiplier: 1.0
+
 # Golden-config rules checked on every backup.
 compliance: []
 #  - name: ssh-only

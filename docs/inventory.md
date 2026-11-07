@@ -35,6 +35,8 @@ groups:
     tags: [critical]
   dc1:
     site: dc1
+  lab:
+    risk: {multiplier: 0.5}     # lab changes score half as much
 
 devices:
   - name: dc1-core1
@@ -73,6 +75,7 @@ else is replaced by the more specific layer.
 | `retrieve` | Override `backup.retrieve`, e.g. `[running, startup]`. |
 | `commands` | Extra show commands for this device (same format as `backup.commands`). |
 | `vars` | Your own data; ignored by NetLedger. |
+| `risk` | How this device's changes are scored: `{categories: {...}, weights: {...}, multiplier: 1.5}`, the same keys as the global [`risk`](configuration.md#risk) block. Set it on a group to cover a whole class of devices, e.g. `lab: {risk: {multiplier: 0.5}}`. In CSV use `risk.multiplier` or `risk.categories.services` headers. |
 | `enabled` | `false` removes the device from every job. |
 
 ### Useful optional_args

@@ -40,6 +40,23 @@ CATEGORIES: dict[str, tuple[str, str]] = {
 PLATFORM_SYNTAX = {"fortios": "fortios", "junos": "braces", "vyos": "braces", "edgeos": "braces", "panos": "set", "gaia": "set", "routeros": "routeros"}
 
 
+@dataclass
+class RiskProfile:
+    """How one device's changes are scored: per-category levels, points per level and a score multiplier.
+
+    The defaults are the built-in ones (:data:`CATEGORIES`, :data:`RISK_WEIGHT`, 1.0). Build one from
+    ``risk`` settings with :meth:`netledger.config.RiskSettings.resolve`.
+    """
+
+    categories: dict[str, str] = field(default_factory=dict)  # category -> level, overriding the default
+    weights: dict[str, int] = field(default_factory=lambda: dict(RISK_WEIGHT))
+    multiplier: float = 1.0
+    origin: str = ""  # where the multiplier was set (a group or device name); "" for the global setting
+
+    def level(self, category: str) -> str:
+        return self.categories.get(category) or CATEGORIES[category][1]
+
+
 def _rx(pattern: str) -> re.Pattern[str]:
     return re.compile(pattern, re.I)
 
@@ -365,6 +382,7 @@ class Analysis:
     syntax: str = "indent"
     initial: bool = False
     notes: list[tuple[str, str]] = field(default_factory=list)  # (risk, reason) about the change as a whole
+    levels: dict[str, str] = field(default_factory=dict, repr=False)  # category levels overridden by risk settings
 
     @property
     def ranked(self) -> list[ChangeItem]:
@@ -398,7 +416,7 @@ class Analysis:
             for category in item.categories or [item.category]:
                 entry = stats.setdefault(category, {"key": category, "label": CATEGORIES[category][0], "count": 0, "risk": "low"})
                 entry["count"] += 1
-                level = item.risk if category == item.category else CATEGORIES[category][1]
+                level = item.risk if category == item.category else self.levels.get(category) or CATEGORIES[category][1]
                 if RISK_ORDER[level] > RISK_ORDER[entry["risk"]]:
                     entry["risk"] = level
         return sorted(stats.values(), key=lambda c: (-RISK_ORDER[c["risk"]], -c["count"], c["label"]))
@@ -666,8 +684,13 @@ def _sections(syntax: str, parsed: Parsed) -> dict[tuple[str, ...], Lines]:
     return sections
 
 
-def analyze(old: str | None, new: str | None, platform: str | None = None) -> Analysis:
-    """Analyse the change from ``old`` to ``new`` configuration text (both normalized, secrets masked)."""
+def analyze(old: str | None, new: str | None, platform: str | None = None, risk: RiskProfile | None = None) -> Analysis:
+    """Analyse the change from ``old`` to ``new`` configuration text (both normalized, secrets masked).
+
+    ``risk`` scores the change for a particular device (category levels, weights, multiplier); without it
+    the built-in scoring applies.
+    """
+    profile = risk or RiskProfile()
     if old is None:
         lines = len((new or "").splitlines())
         return Analysis(risk=None, score=0, added=lines, removed=0, initial=True, syntax=detect_syntax(new or "", platform))
@@ -707,22 +730,39 @@ def analyze(old: str | None, new: str | None, platform: str | None = None) -> An
     items = [
         _build_item(
             syntax, key, group, key in sections_before, key in sections_after, names.get(key),
-            sections_before.get(key, []), sections_after.get(key, []), platform,
+            sections_before.get(key, []), sections_after.get(key, []), platform, profile,
         )
         for key, group in groups.items()
     ]
-    items = _merge_single_lines(syntax, items, groups, platform)
+    items = _merge_single_lines(syntax, items, groups, platform, profile)
+    levels = dict(profile.categories)
     if not items:
-        return Analysis(risk="low", score=0, added=total_added, removed=total_removed, syntax=syntax)
+        return Analysis(risk="low", score=0, added=total_added, removed=total_removed, syntax=syntax, levels=levels)
     changed = total_added + total_removed
-    risk = max((item.risk for item in items), key=RISK_ORDER.__getitem__)
+    level = max((item.risk for item in items), key=RISK_ORDER.__getitem__)
     notes: list[tuple[str, str]] = []
     if changed > 150:
-        if risk != "high":
-            risk = RISK_LEVELS[RISK_ORDER[risk] + 1]
-        notes.append((risk, f"Large change: {changed} lines"))
-    score = sum(RISK_WEIGHT[item.risk] for item in items) + (20 if changed > 150 else 8 if changed > 40 else 0)
-    return Analysis(risk=risk, score=min(100, score), added=total_added, removed=total_removed, items=items, syntax=syntax, notes=notes)
+        if level != "high":
+            level = RISK_LEVELS[RISK_ORDER[level] + 1]
+        notes.append((level, f"Large change: {changed} lines"))
+    bonus = 20 if changed > 150 else 8 if changed > 40 else 0
+    standard = min(100, sum(RISK_WEIGHT[item.risk] for item in items) + bonus)
+    raw = sum(profile.weights[item.risk] for item in items) + bonus
+    points = min(100, raw)
+    score = min(100, int(raw * profile.multiplier + 0.5))
+    if points != standard:
+        custom = [
+            f"{name} {profile.weights[name]} (default {RISK_WEIGHT[name]})"
+            for name in reversed(RISK_LEVELS)
+            if profile.weights[name] != RISK_WEIGHT[name] and any(item.risk == name for item in items)
+        ]
+        notes.append((level, "Risk weights from your settings: " + ", ".join(custom)))
+    if score != points:
+        where = profile.origin or "global setting"
+        notes.append((level, f"{'Device' if profile.origin else 'Risk'} multiplier {profile.multiplier:g} ({where})"))
+    return Analysis(
+        risk=level, score=score, added=total_added, removed=total_removed, items=items, syntax=syntax, notes=notes, levels=levels,
+    )
 
 
 def _block_names(syntax: str, parsed: Parsed) -> dict[tuple[str, ...], str]:
@@ -736,18 +776,30 @@ def _block_names(syntax: str, parsed: Parsed) -> dict[tuple[str, ...], str]:
     return names
 
 
-def _default_reason(label: str, category: str, categories: list[str], risk: str) -> str:
+def _default_reason(label: str, category: str, categories: list[str], risk: str, profile: RiskProfile | None = None) -> str:
     """The reason when nothing more specific is known: the category that set the risk."""
+    profile = profile or RiskProfile()
     if category == "docs":
-        return f"Only descriptions or names changed: {label}"
-    decisive = next((c for c in (category, *categories) if c != "docs" and CATEGORIES[c][1] == risk), category)
+        default = CATEGORIES["docs"][1]
+        how = f" ({risk} risk in your settings, {default} by default)" if profile.level("docs") != default else ""
+        return f"Only descriptions or names changed{how}: {label}"
+    decisive = next((c for c in (category, *categories) if c != "docs" and profile.level(c) == risk), category)
+    default = CATEGORIES[decisive][1]
+    how = f"{risk} risk in your settings, {default} by default" if profile.level(decisive) != default else f"{risk} risk by default"
     if decisive == "other":
-        return f"Change outside the known categories ({risk} risk by default): {label}"
-    return f"{CATEGORIES[decisive][0]} change ({risk} risk by default): {label}"
+        return f"Change outside the known categories ({how}): {label}"
+    return f"{CATEGORIES[decisive][0]} change ({how}): {label}"
 
 
 def _explain(
-    item: ChangeItem, syntax: str, removed: Lines, added: Lines, before: Lines, after: Lines, platform: str | None
+    item: ChangeItem,
+    syntax: str,
+    removed: Lines,
+    added: Lines,
+    before: Lines,
+    after: Lines,
+    platform: str | None,
+    profile: RiskProfile | None = None,
 ) -> ChangeItem:
     """Attach the reasons for an item and raise its risk to what they show."""
     findings = explain(syntax, item.key, item.label, item.action, item.category, item.categories, removed, added, before, after, platform)
@@ -758,7 +810,7 @@ def _explain(
         item.reasons = [finding.text for finding in findings]
         item.reason_ranks = [0 if finding.level else 1 for finding in findings]
     else:
-        item.reasons = [_default_reason(item.label, item.category, item.categories, item.risk)]
+        item.reasons = [_default_reason(item.label, item.category, item.categories, item.risk, profile)]
         item.reason_ranks = [2]
     return item
 
@@ -773,7 +825,9 @@ def _build_item(
     before: Lines | None = None,
     after: Lines | None = None,
     platform: str | None = None,
+    profile: RiskProfile | None = None,
 ) -> ChangeItem:
+    profile = profile or RiskProfile()
     added, removed = group["added"], group["removed"]
     label = label_for(syntax, key)
     if name and name.lower() not in label.lower():
@@ -791,13 +845,13 @@ def _build_item(
     categories = list(dict.fromkeys([head_category, *line_categories]))
     category = head_category
 
-    risk = max((CATEGORIES[c][1] for c in categories if c != "docs"), key=RISK_ORDER.__getitem__, default="low")
+    risk = max((profile.level(c) for c in categories if c != "docs"), key=RISK_ORDER.__getitem__, default=profile.level("docs"))
     details: list[str] = []
     if action == "modified":
         pairs, only_removed, only_added = _pair(removed, added)
         changed_rel = [*removed, *added]
         if changed_rel and all(_is_doc(rel) for rel in changed_rel):
-            category, risk, categories = "docs", "low", ["docs"]
+            category, risk, categories = "docs", profile.level("docs"), ["docs"]
         for rel in only_added:
             if _DOWN.match(rel):
                 details.append("shut down")
@@ -821,13 +875,18 @@ def _build_item(
         text = f"Removed {label}{_section_name(removed, label)}"
     item = ChangeItem(key, label, action, category, risk, text, len(added), len(removed), categories, group["order"])
     lines = group.get("lines") or {"removed": [], "added": []}
-    return _explain(item, syntax, lines["removed"], lines["added"], before or [], after or [], platform)
+    return _explain(item, syntax, lines["removed"], lines["added"], before or [], after or [], platform, profile)
 
 
 def _merge_single_lines(
-    syntax: str, items: list[ChangeItem], groups: dict[tuple[str, ...], dict[str, Any]], platform: str | None = None
+    syntax: str,
+    items: list[ChangeItem],
+    groups: dict[tuple[str, ...], dict[str, Any]],
+    platform: str | None = None,
+    profile: RiskProfile | None = None,
 ) -> list[ChangeItem]:
     """Turn 'Removed ntp server A' + 'Added ntp server B' (top-level lines) into one modification."""
+    profile = profile or RiskProfile()
     if syntax in ("set", "routeros"):
         return items
     removed = {groups[i.key]["removed"][0]: i for i in items if i.action == "removed" and len(i.key) == 1 and i.removed == 1 and not i.added}
@@ -842,14 +901,16 @@ def _merge_single_lines(
             continue
         result.remove(old_item)
         if _is_doc(key):
-            category, risk = "docs", "low"
+            category, risk = "docs", profile.level("docs")
         else:  # the line's own level, before anything the added line alone suggested
             category = new_item.category
-            risk = max((CATEGORIES[c][1] for c in new_item.categories if c != "docs"), key=RISK_ORDER.__getitem__, default="low")
+            risk = max(
+                (profile.level(c) for c in new_item.categories if c != "docs"), key=RISK_ORDER.__getitem__, default=profile.level("docs"),
+            )
         text = _change_text(key, old, new).replace(f"{key} ", f"{key}: ", 1)
         merged = ChangeItem((key,), key, "modified", category, risk, text, 1, 1, [category], min(old_item.order, new_item.order))
         pair_old, pair_new = [((), old_line)], [((), new_line)]
-        result[result.index(new_item)] = _explain(merged, syntax, pair_old, pair_new, pair_old, pair_new, platform)
+        result[result.index(new_item)] = _explain(merged, syntax, pair_old, pair_new, pair_old, pair_new, platform, profile)
     return result
 
 

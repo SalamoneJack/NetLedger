@@ -36,6 +36,7 @@ Any string value can reference the environment or a file:
 | `normalize` | | Noise removal and secret handling. |
 | `health` | | Health-check thresholds, history and forecasts. |
 | `changes` | | Change windows and the change ledger. |
+| `risk` | | How changes are scored: levels per category, weights, a multiplier. |
 | `compliance` | `[]` | Golden-config rules. |
 | `notifications` | `[]` | Where events are sent. |
 | `schedule` | | When `netledger serve` runs jobs. |
@@ -185,6 +186,42 @@ changes:
 
 Unplanned changes are flagged in the console, noted in the commit message (`Window: outside the approved
 change windows`) and sent as `config_changed` events with `warning` severity.
+
+## risk
+
+A lab switch and the edge firewall shouldn't score the same. Change intelligence gives every changed section
+a level from its category, adds up points per level, and scales the 0-100 score:
+
+```yaml
+risk:
+  categories:                       # the level of a category, instead of its default
+    services: medium                # NTP, DNS, logging, SNMP, ... (default low)
+    docs: low
+  weights: {low: 6, medium: 15, high: 34}   # points per section of each level (these are the defaults)
+  multiplier: 1.0                   # scale the score
+```
+
+| Key | Default | Description |
+|---|---|---|
+| `categories` | `{}` | Level (`low`, `medium`, `high`) per category: `access`, `firewall`, `nat`, `routing`, `vpn`, `objects`, `qos`, `interfaces`, `switching`, `system`, `services`, `docs`, `other`. Defaults are listed in [console.md](console.md#change-intelligence). |
+| `weights` | `{low: 6, medium: 15, high: 34}` | Points each section adds to the score. Set only the levels you want to change. |
+| `multiplier` | `1.0` | Multiplies the score (0 to 10). The score is still capped at 100. It never changes a level. |
+
+Devices and groups in the inventory take the same keys (see [inventory.md](inventory.md#device-fields)),
+through the usual group inheritance: a `multiplier` there replaces the global one, and `categories` and
+`weights` are merged with the global ones key by key.
+
+```yaml
+groups:
+  lab:  {risk: {multiplier: 0.5}}
+  edge: {risk: {multiplier: 1.5, categories: {docs: medium}}}
+```
+
+When a setting changes the outcome, the change says so among its reasons:
+`Management services change (medium risk in your settings, low by default): ntp server`,
+`Risk weights from your settings: high 40 (default 34)` or `Device multiplier 1.5 (edge)`. Reasons that come
+from what a change does, such as a firewall rule that now allows any source, still raise a section to high
+risk whatever its category is set to. Without a `risk` block, scoring is exactly the built-in one.
 
 ## compliance
 

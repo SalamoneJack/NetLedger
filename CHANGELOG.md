@@ -24,6 +24,11 @@ All notable changes to this project are documented here. The format follows
   email notifications (`details.reasons` for webhooks and PagerDuty), next to the risk badge in the change
   ledger and the time machine, in `netledger backup` output and in the JSON API.
 - `netledger backup --json` includes each device's change analysis.
+- Configurable risk scoring. A `risk` block sets the level of each change category, the points per level and
+  a score multiplier. Devices and groups can set the same keys in the inventory, through group inheritance,
+  for example a lab group at multiplier 0.5 and the edge firewalls at 1.5. When a setting changes the
+  outcome it is listed among the reasons (`Device multiplier 1.5 (edge)`). Without a `risk` block, scoring
+  is unchanged.
 
 ## [1.0.0] - 2026-10-31
 

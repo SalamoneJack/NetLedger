@@ -253,6 +253,51 @@ class ChangeSettings(_Model):
         return value
 
 
+RiskLevel = Literal["low", "medium", "high"]
+
+
+class RiskWeights(_Model):
+    low: int = Field(default=6, ge=0, le=100)
+    medium: int = Field(default=15, ge=0, le=100)
+    high: int = Field(default=34, ge=0, le=100)
+
+
+class RiskSettings(_Model):
+    """How changes are scored. The same keys can be set per device or group in the inventory."""
+
+    categories: Dict[str, RiskLevel] = Field(
+        default_factory=dict, description="Risk level per change category, e.g. {services: medium, docs: low}"
+    )
+    weights: Optional[RiskWeights] = Field(default=None, description="Score added per section of each risk level")
+    multiplier: float = Field(default=1.0, ge=0, le=10, description="Scale the 0-100 score (lab 0.5, edge firewall 1.5)")
+
+    @field_validator("categories")
+    @classmethod
+    def _categories(cls, value: Dict[str, str]) -> Dict[str, str]:
+        from netledger.intel import CATEGORIES
+
+        unknown = sorted(set(value) - set(CATEGORIES))
+        if unknown:
+            raise ValueError(f"unknown change categor{'ies' if len(unknown) > 1 else 'y'} {unknown}; valid: {', '.join(CATEGORIES)}")
+        return value
+
+    def resolve(self, device: Optional[RiskSettings] = None, origin: str = "") -> Any:
+        """The scoring profile for one device: what the device (or its groups) sets wins over these settings.
+
+        ``origin`` names where the device's multiplier came from (a group or the device), for its reason.
+        """
+        from netledger.intel import RISK_WEIGHT, RiskProfile
+
+        categories = {**self.categories, **(device.categories if device else {})}
+        weights = dict(RISK_WEIGHT)
+        for layer in (self.weights, device.weights if device else None):
+            if layer is not None:
+                weights.update({level: getattr(layer, level) for level in layer.model_fields_set})
+        if device is not None and "multiplier" in device.model_fields_set:
+            return RiskProfile(categories, weights, device.multiplier, origin or "device")
+        return RiskProfile(categories, weights, self.multiplier)
+
+
 # --------------------------------------------------------------------------- compliance
 
 
@@ -380,6 +425,7 @@ class Settings(_Model):
     backup: BackupSettings = Field(default_factory=BackupSettings)
     health: HealthSettings = Field(default_factory=HealthSettings)
     changes: ChangeSettings = Field(default_factory=ChangeSettings)
+    risk: RiskSettings = Field(default_factory=RiskSettings)
     normalize: NormalizeSettings = Field(default_factory=NormalizeSettings)
     compliance: List[ComplianceRule] = Field(default_factory=list)
     notifications: List[NotifierSettings] = Field(default_factory=list)
