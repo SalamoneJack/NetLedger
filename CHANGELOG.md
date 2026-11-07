@@ -4,6 +4,25 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- Oxidized and LibreNMS input. A new `oxidized` inventory source lets Oxidized keep collecting
+  configurations while NetLedger does the change intelligence, change windows, compliance, notifications
+  and console history:
+  - `repo` mode reads Oxidized's git output (one repository or one per group) without writing to it. Every
+    commit since the last one processed becomes a change, with its author and time. The cursor lives in the
+    state file.
+  - `api` mode polls oxidized-web (`/nodes.json`, `/node/fetch`, `/node/version.json`) with optional
+    basic auth.
+  - Oxidized models map to NetLedger platforms, with per-device overrides.
+  - NetLedger does not log in to these devices for backups. Health checks stay optional, with NetLedger's
+    own credentials.
+  - `POST /api/hooks/oxidized` (Bearer token or HMAC signature) lets an Oxidized exec hook trigger
+    processing immediately.
+  - Documented in `docs/oxidized.md`.
+
 ## [1.0.0] - 2026-10-31
 
 ### Added

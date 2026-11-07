@@ -33,7 +33,7 @@ class StateStore:
         return cls(None)
 
     def _empty(self) -> dict[str, Any]:
-        return {"version": STATE_VERSION, "devices": {}, "runs": {}, "changes": [], "activity": [], "activity_seq": 0}
+        return {"version": STATE_VERSION, "devices": {}, "runs": {}, "changes": [], "activity": [], "activity_seq": 0, "cursors": {}}
 
     def _load(self) -> dict[str, Any]:
         if self.path is None or not self.path.exists():
@@ -45,6 +45,7 @@ class StateStore:
             data.setdefault("runs", {})
             data.setdefault("changes", [])
             data.setdefault("activity", [])
+            data.setdefault("cursors", {})
             data.setdefault("activity_seq", max((int(a.get("id") or 0) for a in data["activity"]), default=0))
             return data
         except (OSError, ValueError) as exc:
@@ -139,6 +140,17 @@ class StateStore:
     def activity_cursor(self) -> int:
         with self._lock:
             return int(self._data.get("activity_seq") or 0)
+
+    # ------------------------------------------------------------------ cursors (how far an external source was read)
+
+    def cursor(self, name: str) -> dict[str, Any]:
+        with self._lock:
+            return copy.deepcopy((self._data.get("cursors") or {}).get(name) or {})
+
+    def set_cursor(self, name: str, value: dict[str, Any]) -> None:
+        with self._lock:
+            self._data.setdefault("cursors", {})[name] = copy.deepcopy(value)
+            self._touch()
 
     def runs(self) -> dict[str, Any]:
         with self._lock:

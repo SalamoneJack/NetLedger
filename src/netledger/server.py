@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import base64
+import hashlib
 import hmac
 import json
 import logging
@@ -633,8 +634,40 @@ def _handler_for(app: App) -> type[BaseHTTPRequestHandler]:
             else:
                 self._json(404, {"error": f"unknown device resource {action!r}"})
 
+        def _oxidized_hook(self) -> None:
+            """Oxidized's exec hook (or anything else) says a configuration changed: process it now."""
+            length = int(self.headers.get("Content-Length") or 0)
+            body = self.rfile.read(min(length, 65536)) if length > 0 else b""
+            sources = [s for s in app.settings.inventory_sources if s.type == "oxidized"]
+            tokens = [s.hook_token for s in sources if s.hook_token] + ([app.settings.server.api_token] if app.settings.server.api_token else [])
+            keys = [s.hook_secret for s in sources if s.hook_secret]
+            if not tokens and not keys:
+                self._json(403, {"error": "set hook_token or hook_secret on the oxidized inventory source"})
+                return
+            header = self.headers.get("Authorization", "")
+            signature = self.headers.get("X-NetLedger-Signature") or self.headers.get("X-Hub-Signature-256") or ""
+            allowed = header.startswith("Bearer ") and any(hmac.compare_digest(header[7:].strip(), token) for token in tokens)
+            if not allowed and signature.startswith("sha256="):
+                allowed = any(hmac.compare_digest(signature[7:], hmac.new(key.encode(), body, hashlib.sha256).hexdigest()) for key in keys)
+            if not allowed:
+                self._json(401, {"error": "invalid token or signature"})
+                return
+            if app.scheduler is None or "oxidized" not in getattr(app.scheduler, "jobs", {}):
+                self._json(503, {"error": "this server does not poll an Oxidized source"})
+                return
+            try:
+                node = (json.loads(body or b"{}") or {}).get("node")
+            except (ValueError, AttributeError):
+                node = None
+            started = app.scheduler.trigger("oxidized", queue=True)
+            log.info("Oxidized hook%s: %s", f" for {node}" if node else "", "processing new configurations" if started else "queued after the current run")
+            self._json(202, {"job": "oxidized", "started": started, "queued": not started})
+
         def do_POST(self) -> None:  # noqa: N802
             path = urlparse(self.path).path.rstrip("/")
+            if path == "/api/hooks/oxidized":
+                self._oxidized_hook()
+                return
             if not path.startswith("/api/run/"):
                 self._send(404, b"not found\n", "text/plain")
                 return

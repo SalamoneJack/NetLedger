@@ -13,7 +13,12 @@ inventory:
   - type: netbox                # NetBox (see below)
     url: https://netbox.example.com
     token: ${NETBOX_TOKEN}
+  - type: oxidized              # nodes and configurations from Oxidized (see oxidized.md)
+    path: /var/lib/oxidized/configs.git
 ```
+
+An `oxidized` source is different from the others. Its devices get their configurations from Oxidized,
+so NetLedger never logs in to back them up. See [oxidized.md](oxidized.md).
 
 If two sources define the same device name, the later one wins (a warning is logged), which makes
 an `overrides.yaml` after a NetBox source a handy pattern. The inventory is re-read at the start of

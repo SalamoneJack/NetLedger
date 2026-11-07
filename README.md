@@ -136,7 +136,7 @@ risky they were, or to *Vendor*. Drag nodes, zoom and pan; positions are remembe
   startup), and a shrink guard that refuses to commit a truncated config.
 - **Secrets under control.** Keep them, mask them, or replace them with a stable keyed hash so you
   still see *that* a password changed without exposing it. The console, its API and alerts always mask.
-- **Inventory from anywhere.** YAML with group inheritance, CSV exports, or NetBox.
+- **Inventory from anywhere.** YAML with group inheritance, CSV exports, NetBox, or an existing Oxidized.
 - **Try it in seconds.** `netledger demo` builds a simulated 13-device network with six weeks of history
   (changes by five engineers, a memory leak, a failing fan, a site outage) so you can explore everything
   without touching production.
@@ -146,7 +146,8 @@ risky they were, or to *Vendor*. Drag nodes, zoom and pan; positions are remembe
 [Oxidized](https://github.com/ytti/oxidized) and [RANCID](https://shrubbery.net/rancid/) are mature,
 battle-tested backup tools with broader device coverage. If configuration backup is all you need, they are
 great choices. NetLedger is for teams that also want to *understand* every change and keep an eye on device
-health, in one tool.
+health, in one tool. It can also sit on top of Oxidized: Oxidized keeps collecting, and NetLedger adds the
+analysis, alerts and console.
 
 | | NetLedger | Oxidized | RANCID |
 |---|---|---|---|
@@ -160,6 +161,22 @@ health, in one tool.
 | Health history and exhaustion forecasts | ✅ | - | - |
 | LLDP network map | ✅ | - | - |
 | Web interface | ✅ built in | ✅ (oxidized-web) | - |
+| Works on top of an existing Oxidized (its git repository or API) | ✅ | n/a | - |
+
+### Already using Oxidized?
+
+Keep it. Point NetLedger at Oxidized's git repository or its API, and every configuration Oxidized
+collects gets NetLedger's change intelligence, change windows, compliance rules, alerts and console. NetLedger
+does not log in to those devices and never writes to Oxidized's repository. An Oxidized exec hook can make
+it process a change the moment Oxidized stores it. LibreNMS users can point it at the same Oxidized.
+
+```yaml
+inventory:
+  - type: oxidized
+    path: /var/lib/oxidized/configs.git    # or mode: api + url: http://oxidized:8888
+```
+
+See [docs/oxidized.md](docs/oxidized.md).
 
 ## From the command line
 
@@ -441,6 +458,7 @@ Filters work on every device command and combine freely: `-d 'core-*' -s hq -g f
 - [Web console](docs/console.md): change intelligence, time machine, where-is, forecasts, network map
 - [Configuration reference](docs/configuration.md): every setting, with defaults
 - [Inventory](docs/inventory.md): YAML groups, CSV, NetBox, credentials and fallbacks
+- [Already using Oxidized?](docs/oxidized.md): NetLedger on top of Oxidized's repository or API (LibreNMS too)
 - [Platforms](docs/platforms.md): per-vendor details and the commands NetLedger runs
 - [Health checks](docs/health-checks.md) and [Prometheus metrics](docs/health-checks.md#prometheus-metrics)
 - [Notifications](docs/notifications.md)

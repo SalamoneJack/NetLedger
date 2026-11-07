@@ -53,6 +53,8 @@ class Device:
     commands: list[Any] = field(default_factory=list)
     vars: dict[str, Any] = field(default_factory=dict)
     source: str = ""
+    collector: str = ""  # "oxidized": configurations come from Oxidized, NetLedger does not log in to back up
+    oxidized: dict[str, Any] = field(default_factory=dict)  # the Oxidized node behind the device
 
     @property
     def platform_info(self) -> Platform:
@@ -80,7 +82,7 @@ class Device:
     def summary(self) -> dict[str, Any]:
         """Public, secret-free description of the device."""
         info = self.platform_info
-        return {
+        data = {
             "name": self.name,
             "host": self.host,
             "platform": info.key,
@@ -94,6 +96,9 @@ class Device:
             "backup": self.backup,
             "health": self.health,
         }
+        if self.collector:
+            data["collector"] = self.collector
+        return data
 
 
 # --------------------------------------------------------------------------- parsing helpers
@@ -416,6 +421,10 @@ def load_inventory(settings: Settings) -> list[Device]:
             loaded: list[Device] = []
             for path in _expand_paths(settings.resolve_path(source.path or "")):
                 loaded.extend(load_file(path, source.defaults))
+        elif source.type == "oxidized":
+            from netledger.oxidized import load_oxidized_inventory
+
+            loaded = load_oxidized_inventory(source, settings)
         else:
             loaded = load_netbox_inventory(source)
         for device in loaded:
@@ -457,6 +466,8 @@ def validate_inventory(devices: list[Device], settings: Settings) -> list[str]:
     problems: list[str] = []
     checked_drivers: dict[str, str | None] = {}
     for device in devices:
+        if device.collector == "oxidized" and not device.health:
+            continue  # Oxidized collects its configuration; NetLedger never logs in to it
         try:
             resolve_credentials(device, settings)
         except ConfigError as exc:
